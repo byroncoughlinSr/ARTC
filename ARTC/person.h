@@ -4,7 +4,6 @@
 #include <QDate>
 using namespace std;
 
-
 class Person
 {
 public:
@@ -13,25 +12,27 @@ public:
 public:
     struct Individual {
     int id;
-    string name;
-    string firstName;
-    string middleName;
-    string lastName;
+    QString name;
+    QString firstName;
+    QString middleName;
+    QString lastName;
+    QString alias;
     QDate birthdate;
     char sex;
     int mtherId;
     int fatherId;
     };
 
-   public:
-    string getFirstName();
-    void setFirstName(string);
-    string getLastName();
-    void setLastName(string);
-    string getName();
-    void setName();
-    string getAlias();
-    void setAlias(string);
+
+   private:
+    QString getFirstName(Individual);
+    void setFirstName(QString, Individual);
+    QString getLastName();
+    void setLastName(QString, Individual);
+    QString getName();
+    void setName(QString, Individual);
+    QString getAlias();
+    void setAlias(QString, Individual);
 };
 
 #endif // PERSON_H

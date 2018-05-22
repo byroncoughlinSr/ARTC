@@ -23,9 +23,9 @@ void Hostdlg::on_buttonBox_accepted()
     DatabaseHelper databaseHelper;
     databaseHelper.createConnection();
 
-    host.firstName = ui->firstNameTxt->toPlainText().toStdString();
-    host.middleName = ui->middleNameTxt->toPlainText().toStdString();;
-    host.lastName = ui->lastNameTxt->toPlainText().toStdString();
+    host.firstName = ui->firstNameTxt->toPlainText();
+    host.middleName = ui->middleNameTxt->toPlainText();
+    host.lastName = ui->lastNameTxt->toPlainText();
     host.birthdate = ui->dateEdit->date();
 
     if (ui->maleBtn->isChecked())

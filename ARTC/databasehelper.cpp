@@ -31,9 +31,9 @@ bool DatabaseHelper::createConnection()
 
 bool DatabaseHelper::addPerson(struct Person::Individual p)
 {
-    QString fn = QString::fromStdString(p.firstName);
-    QString mn = QString::fromStdString(p.middleName);
-    QString ln = QString::fromStdString(p.lastName);
+    QString fn = p.firstName;
+    QString mn = p.middleName;
+    QString ln =p.lastName;
     QString bd = p.birthdate.toString("yyyy.MM.dd");
     QChar sex = p.sex;
 
@@ -47,9 +47,9 @@ bool DatabaseHelper::addPerson(struct Person::Individual p)
 
 int DatabaseHelper::getPersonId(struct Person::Individual p)
 {
-    QString fn = QString::fromStdString(p.firstName);
-    QString mn = QString::fromStdString(p.middleName);
-    QString ln = QString::fromStdString(p.lastName);
+    QString fn = p.firstName;
+    QString mn = p.middleName;
+    QString ln = p.lastName;
     int id;
 
     QSqlQuery query;
