@@ -13,6 +13,7 @@ public:
 public:
     struct Individual {
     int id;
+    string name;
     string firstName;
     string middleName;
     string lastName;
@@ -21,6 +22,16 @@ public:
     int mtherId;
     int fatherId;
     };
+
+   public:
+    string getFirstName();
+    void setFirstName(string);
+    string getLastName();
+    void setLastName(string);
+    string getName();
+    void setName();
+    string getAlias();
+    void setAlias(string);
 };
 
 #endif // PERSON_H
