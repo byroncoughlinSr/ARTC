@@ -45,3 +45,13 @@ void setAlias(QString alias, Person::Individual individual)
     individual.alias = alias;
 }
 
+void setSex(char sex, Person::Individual individual)
+{
+    individual.sex = sex;
+}
+
+char getSex(Person::Individual individual)
+{
+    return individual.sex;
+}
+
