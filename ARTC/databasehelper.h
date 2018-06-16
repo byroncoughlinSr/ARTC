@@ -7,8 +7,6 @@ class DatabaseHelper
 {
 public:
     DatabaseHelper();
-
-public:
     bool createConnection();
     bool addPerson(struct Person::Individual p);
     int getPersonId(struct Person::Individual);

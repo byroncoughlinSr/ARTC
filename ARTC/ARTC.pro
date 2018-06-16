@@ -28,13 +28,15 @@ SOURCES += \
         mainwindow.cpp \
     hostdlg.cpp \
     databasehelper.cpp \
-    person.cpp
+    person.cpp \
+    pedigree.cpp
 
 HEADERS += \
         mainwindow.h \
     hostdlg.h \
     databasehelper.h \
-    person.h
+    person.h \
+    pedigree.h
 
 FORMS += \
         mainwindow.ui \

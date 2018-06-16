@@ -18,7 +18,7 @@ bool DatabaseHelper::createConnection()
     const QString DRIVER("QMYSQL");
     QSqlDatabase db = QSqlDatabase::addDatabase(DRIVER);
     db.setDatabaseName("artc");
-    db.setHostName("192.168.0.22");
+    db.setHostName("192.168.56.103");
     db.setUserName("root");
     db.setPassword("Dinneris@5");
     db.setDatabaseName("dbArtc");
@@ -61,6 +61,4 @@ int DatabaseHelper::getPersonId(struct Person::Individual p)
     }
 
     return id;
-
-
 }
