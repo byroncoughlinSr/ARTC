@@ -6,10 +6,14 @@
 class DatabaseHelper
 {
 public:
-    DatabaseHelper();
+    DatabaseHelper(QString, QString);
     bool createConnection();
     bool addPerson(struct Person::Individual p);
     int getPersonId(struct Person::Individual);
+
+ private:
+    QString userName;
+    QString passWord;
 };
 
 #endif // DATABASEHELPER_H

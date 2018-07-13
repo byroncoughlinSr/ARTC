@@ -20,8 +20,6 @@ Hostdlg::~Hostdlg()
 void Hostdlg::on_buttonBox_accepted()
 {
     int hostId;
-    DatabaseHelper databaseHelper;
-    databaseHelper.createConnection();
 
     host.firstName = ui->firstNameTxt->toPlainText();
     host.middleName = ui->middleNameTxt->toPlainText();
@@ -36,6 +34,10 @@ void Hostdlg::on_buttonBox_accepted()
     {
         host.sex = 'F';
     }
-    databaseHelper.addPerson(host);
-    hostId = databaseHelper.getPersonId(host);
+
+}
+
+Person::Individual Hostdlg::getHost()
+{
+    return host;
 }

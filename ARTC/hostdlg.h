@@ -15,18 +15,18 @@ class Hostdlg : public QDialog
     Q_OBJECT
 
 private:
+    Ui::Hostdlg *ui;
     Person::Individual host;
 
 
 public:
     explicit Hostdlg(QWidget *parent = 0);
     ~Hostdlg();
+    Person::Individual getHost();
+
 
 private slots:
-    void on_buttonBox_accepted();
-
-private:
-    Ui::Hostdlg *ui;
+    void on_buttonBox_accepted();    
 };
 
 #endif // HOSTDLG_H

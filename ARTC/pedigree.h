@@ -10,7 +10,7 @@ class Pedigree
 public:
     Pedigree();
    void createPedigree(Person::Individual individual );
-
+   void createSide(QChar s, int id);
 };
 
 #endif // PEDIGREE_H

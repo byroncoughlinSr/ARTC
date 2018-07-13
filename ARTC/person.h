@@ -24,18 +24,17 @@ public:
     };
 
 
-   private:
+   public:
     QString getFirstName(Individual);
-    void setFirstName(QString, Individual);
+    void setFirstName(QString, Individual i);
     QString getLastName();
     void setLastName(QString, Individual);
     QString getName();
     void setName(QString, Individual);
     QString getAlias();
     void setAlias(QString, Individual);
-    void setSex(char*);
+    void setSex(char, Individual);
     char* getSex();
-
 };
 
 #endif // PERSON_H

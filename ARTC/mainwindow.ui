@@ -20,7 +20,7 @@
      <x>0</x>
      <y>0</y>
      <width>1120</width>
-     <height>20</height>
+     <height>30</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -38,15 +38,22 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
+   <addaction name="action_New_Host"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="action_New_Host">
+   <property name="icon">
+    <iconset resource="resources.qrc">
+     <normaloff>:/rec/images/new.png</normaloff>:/rec/images/new.png</iconset>
+   </property>
    <property name="text">
     <string>&amp;New Host</string>
    </property>
   </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
- <resources/>
+ <resources>
+  <include location="resources.qrc"/>
+ </resources>
  <connections/>
 </ui>

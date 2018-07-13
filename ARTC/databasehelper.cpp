@@ -1,4 +1,4 @@
-#include "databasehelper.h"
+ #include "databasehelper.h"
 #include <QSqlDriver>
 #include <QSqlDatabase>
 #include <QtDebug>
@@ -8,10 +8,12 @@
 #include "person.h"
 
 
-DatabaseHelper::DatabaseHelper()
+DatabaseHelper::DatabaseHelper(QString usernme, QString passWrd)
 {
-
+    DatabaseHelper::userName = usernme;
+    DatabaseHelper::passWord = passWrd;   
 }
+
 
 bool DatabaseHelper::createConnection()
 {
@@ -19,8 +21,8 @@ bool DatabaseHelper::createConnection()
     QSqlDatabase db = QSqlDatabase::addDatabase(DRIVER);
     db.setDatabaseName("artc");
     db.setHostName("192.168.56.103");
-    db.setUserName("root");
-    db.setPassword("Dinneris@5");
+    db.setUserName(userName);
+    db.setPassword(passWord);
     db.setDatabaseName("dbArtc");
     if (!db.open()) {
         QMessageBox::critical(0, QObject::tr("Database Error"), db.lastError().text());
@@ -36,7 +38,6 @@ bool DatabaseHelper::addPerson(struct Person::Individual p)
     QString ln =p.lastName;
     QString bd = p.birthdate.toString("yyyy.MM.dd");
     QChar sex = p.sex;
-
 
     QSqlQuery query;
     query.exec("INSERT INTO tblPerson (firstName, middleName, lastName, birthdate, sex)"

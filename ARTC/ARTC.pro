@@ -29,16 +29,22 @@ SOURCES += \
     hostdlg.cpp \
     databasehelper.cpp \
     person.cpp \
-    pedigree.cpp
+    pedigree.cpp \
+    login.cpp
 
 HEADERS += \
         mainwindow.h \
     hostdlg.h \
     databasehelper.h \
     person.h \
-    pedigree.h
+    pedigree.h \
+    login.h
 
 FORMS += \
         mainwindow.ui \
-    hostdlg.ui
+    hostdlg.ui \
+    login.ui
+
+RESOURCES += \
+    resources.qrc
 
