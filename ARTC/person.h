@@ -19,7 +19,7 @@ public:
     QString alias;
     char sex;
     QDate birthdate;
-    int mtherId;
+    int motherId;
     int fatherId;
     };
 
@@ -35,6 +35,8 @@ public:
     void setAlias(QString, Individual);
     void setSex(char, Individual);
     char* getSex();
+    void setMother(int id, Person::Individual individual);
+    int getMotherId(Person::Individual individual);
 };
 
 #endif // PERSON_H

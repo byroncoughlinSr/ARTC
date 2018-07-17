@@ -55,3 +55,13 @@ char getSex(Person::Individual individual)
     return individual.sex;
 }
 
+void Person::setMother(int id, Person::Individual individual)
+{
+   individual.motherId = id;
+}
+
+int Person::getMotherId(Person::Individual individual)
+{
+    return individual.motherId;
+}
+

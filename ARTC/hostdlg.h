@@ -25,6 +25,7 @@ public:
     Person::Individual getHost();
 
 
+
 private slots:
     void on_buttonBox_accepted();    
 };

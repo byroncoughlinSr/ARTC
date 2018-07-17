@@ -63,3 +63,85 @@ int DatabaseHelper::getPersonId(struct Person::Individual p)
 
     return id;
 }
+
+bool DatabaseHelper::setHost(int hostId)
+{
+    QSqlQuery qry;
+    qry.prepare("INSERT INTO tblHost (personId) VALUES (:id);");
+    qry.bindValue(":id", hostId);
+    qry.exec();
+    return true;
+}
+
+/**
+ * @brief DatabaseHelper::addMother
+ * @param id
+ * @return
+ */
+bool DatabaseHelper::addMother(int id)
+{
+    QString fn = "MOTHER";
+    QString ln = QString::number(id);
+
+    QSqlQuery query;
+    query.exec("INSERT INTO tblPerson (firstName, lastName)"
+               "VALUES('" + fn + "', '" + ln + "')");
+    return true;
+}
+
+/**
+ * @brief DatabaseHelper::addFather
+ * @param id
+ * @return
+ */
+bool DatabaseHelper::addFather(int id)
+{
+    QString fn = "FATHER";
+    QString ln = QString::number(id);
+
+    QSqlQuery query;
+    query.exec("INSERT INTO tblPerson (firstName, lastName)"
+               "VALUES('" + fn + "', '" + ln + "')");
+    return true;
+}
+
+int DatabaseHelper::getFatherId(QString fn, QString ln)
+{
+    int id;
+
+    QSqlQuery query;
+    query.exec("SELECT ID FROM tblPerson WHERE firstname = '" + fn + "' AND lastName = '" + ln + "'");
+
+    while (query.next())
+    {
+        id = query.value(0).toInt();
+    }
+
+    return id;
+}
+
+int DatabaseHelper::getMotherId(QString fn, QString ln)
+{
+    int id;
+
+    QSqlQuery query;
+    query.exec("SELECT ID FROM tblPerson WHERE firstname = '" + fn + "' AND lastName = '" + ln + "'");
+
+    while (query.next())
+    {
+        id = query.value(0).toInt();
+    }
+
+    return id;
+}
+
+ bool DatabaseHelper::addParents(int personId, int fatherId, int motherId)
+ {
+     QSqlQuery qry;
+     qry.prepare("UPDATE tblPerson SET fatherId = :fatherId, motherId = :motherId WHERE ID = :personId;");
+     qry.bindValue(":fatherId", fatherId);
+     qry.bindValue(":motherId", motherId);
+     qry.bindValue(":personId", personId);
+     qry.exec();
+     return true;
+ }

@@ -17,6 +17,9 @@ Hostdlg::~Hostdlg()
     delete ui;
 }
 
+/**
+ * @brief Hostdlg::on_buttonBox_accepted
+ */
 void Hostdlg::on_buttonBox_accepted()
 {
     int hostId;
@@ -37,7 +40,13 @@ void Hostdlg::on_buttonBox_accepted()
 
 }
 
+/**
+ * @brief Hostdlg::getHost
+ * @return
+ */
 Person::Individual Hostdlg::getHost()
 {
     return host;
 }
+
+
