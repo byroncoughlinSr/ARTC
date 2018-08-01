@@ -1,69 +1,106 @@
 #include "pedigree.h"
+#include <QSqlDatabase>
 #include "databasehelper.h"
 #include "person.h"
 #include <cmath>
 
-Pedigree::Pedigree()
+void Pedigree::createPedigree(int id, DatabaseHelper databaseHelper)
 {
-
-}
-
-void Pedigree::createPedigree(Person::Individual individual)
-{
-    int id;
-    QChar side = 'M';
     QString mother;
     QString father;
     QString person;
 
-    id = individual.id;
     mother = "MOTHER-" + QString::number(id,10);
+    new_person.firstName = mother;
+    databaseHelper.addPerson(new_person);
     father = "FATHER-" + QString::number(id,10);
+    new_person.firstName = father;
+    databaseHelper.addPerson(new_person);
 
-    //Create father's side
-    createSide(side, id);
+    generation = 3;
+    max_number = 4;
 
-    //Create mother's side
-    side = 'F';
-    createSide(side, id);
+    while (generation < 7)
+    {
+        nextGeneration(id, databaseHelper);
+    }
 }
 
+void Pedigree::nextGeneration(int id, DatabaseHelper databasehelper)
+{
+    QChar side = 'M';
+    person=1;
+
+   while (person <= max_number)
+   {
+        //Create father's side
+        createSide(side, id, databasehelper);
+
+        //Create mother's side
+        side = 'F';
+        createSide(side, id, databasehelper);
+   }
+   generation++;
+   //For each generation number of individuals doubles
+    max_number = max_number*2;
+}
+
+
 //Create one side of the pedigree chart up to five generations
-void Pedigree::createSide(QChar s, int id)
-{   Person::Individual new_individual;
-   // DatabaseHelper dbHelper;
-    Person new_person;
+void Pedigree::createSide(QChar s, int id, DatabaseHelper databaseHelper)
+{
+    Person next_person;
     QString name;
-    int generation;
+    QString par;
+    QString gen;
     int sequence;
-    int max_sequence;
-    const int MAX_GENERATION = 5;
+    int num;
+    int parent;
     QString grandparent;
-    max_sequence = 2;
+    num = max_number/2;
+    parent = 1;
 
-
-    for (generation = 1; generation < MAX_GENERATION; generation++)
-    {
-      for (sequence = 1; sequence < max_sequence; sequence++)
+      for (sequence = 1; sequence <= num; sequence++)
       {
-
          //If the parent of a generation is an even number in the sequence then they should be classified as a grandmother
           if (sequence % 2 == 0)
           {
-            grandparent = "GM";
+            grandparent = "GM";            
           }
           //If the parent of a generation is an odd number in the sequence then they should be classified as a grandfather
           else
           {
-            grandparent = "GF";
+            grandparent = "GF";            
           }
 
           //Put it all together
-          name =  s + grandparent + QString::number(generation, 10) + QString::number(sequence, 10) + "-" + QString::number(id, 10);
-          new_person.setFirstName(name, new_individual);
-         // dbHelper.addPerson(new_individual);
-      }
-     //For each generation nuber of individuals doubles
-      max_sequence = pow(10, 2);
-    }
+          if (parent < 10)
+          {
+              par = "0" + QString::number(parent, 10);
+          } else {
+              par = QString::number(parent, 10);
+          }
+
+          if (generation < 10)
+          {
+              gen = "0" + QString::number(generation, 10);
+          } else {
+              gen = QString::number(generation, 10);
+          }
+          name =  s + grandparent + gen + par + "-" + QString::number(id, 10);
+          if(grandparent == "GM")
+          {
+             parent++;
+          }
+          next_person.setFirstName(name);
+          if (grandparent == "GF")
+          {
+              next_person.setSex('M');
+          } else
+          {
+             next_person.setSex('F');
+          }
+          databaseHelper.addPerson(next_person.individual);
+          person++;
+      }     
 }

@@ -2,15 +2,24 @@
 #define PEDIGREE_H
 
 #include "person.h"
+#include "databasehelper.h"
 #include <string>
+
 using namespace std;
 
 class Pedigree
 {
 public:
-    Pedigree();
-   void createPedigree(Person::Individual individual );
-   void createSide(QChar s, int id);
+    int generation;
+    int max_number;
+    int person;
+   void createPedigree(int id, DatabaseHelper databaseHelper);
+   void nextGeneration(int id, DatabaseHelper databasehelper);
+   void createSide(QChar s, int id, DatabaseHelper databaseHelper);
+
+private:
+   Person::Individual new_person;
+
 };
 
 #endif // PEDIGREE_H

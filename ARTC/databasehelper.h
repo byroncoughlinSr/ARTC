@@ -1,7 +1,7 @@
 #ifndef DATABASEHELPER_H
 #define DATABASEHELPER_H
 #include "person.h"
-
+#include <QSqlDatabase>
 
 class DatabaseHelper
 {

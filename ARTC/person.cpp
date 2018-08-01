@@ -5,63 +5,65 @@ Person::Person()
 
 }
 
-QString getFirstName(Person::Individual individual)
+QString Person::getFirstName()
 {
     return individual.firstName;
 }
 
-void Person::setFirstName(QString fname, Person::Individual individual)
+void Person::setFirstName(QString fname)
 {
     individual.firstName = fname;
 }
 
-QString getLastName(Person::Individual individual)
+QString Person::getLastName()
 {
     return individual.lastName;
 }
 
-void Person::setLastName(QString lname, Person::Individual individual)
+void Person::setLastName(QString lname)
 {
     individual.lastName = lname;
 }
 
-QString getName(Person::Individual individual)
+QString Person::getName()
 {
     return individual.name;
 }
 
-void Person::setName(QString name, Person::Individual individual)
+void Person::setName(QString n)
 {
-    individual.name = name;
+    individual.name = n;
 }
 
-QString getAlias(Person::Individual individual)
+QString Person::getAlias()
 {
     return individual.alias;
 }
 
-void Person::setAlias(QString alias, Person::Individual individual)
+void Person::setAlias(QString al)
 {
-    individual.alias = alias;
+    individual.alias = al;
 }
 
-void Person::setSex(char sex, Person::Individual individual)
+void Person::setSex(char s)
 {
-    individual.sex = sex;
+    individual.sex = s;
 }
 
-char getSex(Person::Individual individual)
+char Person::getSex()
 {
     return individual.sex;
 }
 
-void Person::setMother(int id, Person::Individual individual)
+void Person::setMother(int id)
 {
    individual.motherId = id;
 }
 
-int Person::getMotherId(Person::Individual individual)
+int Person::getMotherId()
 {
     return individual.motherId;
 }
+
+
 

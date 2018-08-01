@@ -23,20 +23,20 @@ public:
     int fatherId;
     };
 
-
-   public:
-    QString getFirstName(Individual);
-    void setFirstName(QString, Individual i);
-    QString getLastName();
-    void setLastName(QString, Individual);
-    QString getName();
-    void setName(QString, Individual);
-    QString getAlias();
-    void setAlias(QString, Individual);
-    void setSex(char, Individual);
-    char* getSex();
-    void setMother(int id, Person::Individual individual);
-    int getMotherId(Person::Individual individual);
+public:
+Individual individual;
+QString getFirstName();
+void setFirstName(QString);
+QString getLastName();
+void setLastName(QString);
+QString getName();
+void setName(QString);
+QString getAlias();
+void setAlias(QString);
+void setSex(char s);
+char getSex();
+void setMother(int id);
+int getMotherId();
 };
 
 #endif // PERSON_H

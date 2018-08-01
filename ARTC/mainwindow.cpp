@@ -8,7 +8,7 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
-    Login login;
+    Login login;   
 
     //Run login dialog
     login.setModal(true);
@@ -28,8 +28,6 @@ MainWindow::~MainWindow()
 void MainWindow::on_action_New_Host_triggered()
 {
     int hostId;
-    int fatherId;
-    int motherId;
     Hostdlg hostdlg;
 
     hostdlg.setModal(true);
@@ -37,10 +35,6 @@ void MainWindow::on_action_New_Host_triggered()
 
     databaseHelper.addPerson(hostdlg.getHost());
     hostId = databaseHelper.getPersonId(hostdlg.getHost());
-    databaseHelper.addFather(hostId);
-    databaseHelper.addMother(hostId);
-    fatherId = databaseHelper.getFatherId("FATHER", QString::number(hostId));
-    motherId = databaseHelper.getMotherId("MOTHER", QString::number(hostId));
-    databaseHelper.addParents(hostId, fatherId, motherId);
     databaseHelper.setHost(hostId);
+    pedigree.createPedigree(hostId, databaseHelper);
 }
