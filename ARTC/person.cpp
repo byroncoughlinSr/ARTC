@@ -65,5 +65,39 @@ int Person::getMotherId()
     return individual.motherId;
 }
 
+void Person::setPersonId(int id)
+{
+    pedigreeConstant.personId =id;
+}
+
+void Person::setPedigreeConstantName(QString name)
+{
+   pedigreeConstant.pedigreeConstanName = name;
+}
+
+void Person::setPedigreeConstantParent(QChar parent)
+{
+    pedigreeConstant.pedigreeConstantParent = parent;
+}
+
+void Person::setPedigreeConstantGrandparent(QString grandparent)
+{
+    pedigreeConstant.pedigreeConstantGrandparent = grandparent;
+}
+
+void Person::setPedigreeGeneration(int generation)
+{
+    pedigreeConstant.pedigreeGeneration = generation;
+}
+
+void Person::setPedigreeSequence(int sequence)
+{
+    pedigreeConstant.pedigreeSequence = sequence;
+}
+
+void Person::setPedigreeRoot(int root)
+{
+    pedigreeConstant.pedigreeRootId = root;
+}
 
 

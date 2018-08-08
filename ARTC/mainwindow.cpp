@@ -17,7 +17,7 @@ MainWindow::MainWindow(QWidget *parent) :
    databaseHelper = DatabaseHelper(login.getUsername(), login.getPassword());
    databaseHelper.createConnection();
 
-    ui->setupUi(this);
+    ui->setupUi(this);   
 }
 
 MainWindow::~MainWindow()

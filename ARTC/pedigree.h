@@ -13,13 +13,15 @@ public:
     int generation;
     int max_number;
     int person;
+
    void createPedigree(int id, DatabaseHelper databaseHelper);
    void nextGeneration(int id, DatabaseHelper databasehelper);
    void createSide(QChar s, int id, DatabaseHelper databaseHelper);
+   void addParents(QChar parent, DatabaseHelper databaseHelper);
 
 private:
    Person::Individual new_person;
-
+   Person::PedigreeConstant pedigreeConstant;
 };
 
 #endif // PEDIGREE_H

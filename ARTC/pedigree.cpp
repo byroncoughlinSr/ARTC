@@ -3,6 +3,7 @@
 #include "databasehelper.h"
 #include "person.h"
 #include <cmath>
+#include <QtSql>
 
 void Pedigree::createPedigree(int id, DatabaseHelper databaseHelper)
 {
@@ -10,11 +11,16 @@ void Pedigree::createPedigree(int id, DatabaseHelper databaseHelper)
     QString father;
     QString person;
 
+    //Add mother to database
     mother = "MOTHER-" + QString::number(id,10);
     new_person.firstName = mother;
+    new_person.sex = 'F';
     databaseHelper.addPerson(new_person);
+
+    //Add father tgo database
     father = "FATHER-" + QString::number(id,10);
     new_person.firstName = father;
+    new_person.sex = 'M';
     databaseHelper.addPerson(new_person);
 
     generation = 3;
@@ -24,6 +30,9 @@ void Pedigree::createPedigree(int id, DatabaseHelper databaseHelper)
     {
         nextGeneration(id, databaseHelper);
     }
+
+    //Add mothers side parents
+    addParents('M', databaseHelper);
 }
 
 void Pedigree::nextGeneration(int id, DatabaseHelper databasehelper)
@@ -53,10 +62,12 @@ void Pedigree::createSide(QChar s, int id, DatabaseHelper databaseHelper)
     QString name;
     QString par;
     QString gen;
+    QString grandparent;
     int sequence;
     int num;
     int parent;
-    QString grandparent;
+    int per;
+
     num = max_number/2;
     parent = 1;
 
@@ -88,10 +99,7 @@ void Pedigree::createSide(QChar s, int id, DatabaseHelper databaseHelper)
               gen = QString::number(generation, 10);
           }
           name =  s + grandparent + gen + par + "-" + QString::number(id, 10);
-          if(grandparent == "GM")
-          {
-             parent++;
-          }
+
           next_person.setFirstName(name);
           if (grandparent == "GF")
           {
@@ -100,7 +108,88 @@ void Pedigree::createSide(QChar s, int id, DatabaseHelper databaseHelper)
           {
              next_person.setSex('F');
           }
-          databaseHelper.addPerson(next_person.individual);
+          per = databaseHelper.addPerson(next_person.individual);
+
+          //Set pedigree constants for database
+          next_person.setPersonId(per);
+          next_person.setPedigreeConstantName(name);
+          next_person.setPedigreeConstantGrandparent(grandparent);
+          next_person.setPedigreeConstantParent(s);
+          next_person.setPedigreeGeneration(generation);
+          next_person.setPedigreeSequence(parent);
+          next_person.setPedigreeRoot(id);
+
+          databaseHelper.addPedigreeConstant(next_person.pedigreeConstant);
+
+          if(grandparent == "GM")
+          {
+             parent++;
+          }
           person++;
-      }     
+      }
+}
+
+void Pedigree::addParents(QChar parent, DatabaseHelper databaseHelper)
+{
+    int max_generation;
+    int next_generation;
+    int generation = 3;
+    int personId;
+    int fatherId;
+    int motherId;
+
+    next_generation = generation + 1;
+    max_generation = databaseHelper.getMaxGeneration();
+
+
+    while (generation <= max_generation)
+    {
+        QSqlQuery  query_father_gf = databaseHelper.getGeneration(generation, 'F', "GF");
+        QSqlQuery  query_father_gm = databaseHelper.getGeneration(generation, 'F', "GM");
+        QSqlQuery  query_father_gf_next = databaseHelper.getGeneration(next_generation,  'F', "GF");
+        QSqlQuery  query_father_gm_next = databaseHelper.getGeneration(next_generation,  'F', "GM");
+        while (query_father_gf.next() &&
+               query_father_gf_next.next() &&
+               query_father_gm_next.next() &&
+               query_father_gm.next())
+        {
+            personId = query_father_gf.value(1).toInt();
+            fatherId = query_father_gf_next.value(1).toInt();
+            motherId = query_father_gm_next.value(1).toInt();
+            databaseHelper.addParents(personId, fatherId, motherId);
+
+            query_father_gf_next.next();
+            query_father_gm_next.next();
+            personId = query_father_gm.value(1).toInt();
+            fatherId = query_father_gf_next.value(1).toInt();
+            motherId = query_father_gm_next.value(1).toInt();
+            databaseHelper.addParents(personId, fatherId, motherId);
+        }
+
+        QSqlQuery  query_mother_gf = databaseHelper.getGeneration(generation, 'M', "GF");
+        QSqlQuery  query_mother_gm = databaseHelper.getGeneration(generation, 'M', "GM");
+        QSqlQuery  query_mother_gf_next = databaseHelper.getGeneration(next_generation,  'M', "GF");
+        QSqlQuery  query_mother_gm_next = databaseHelper.getGeneration(next_generation,  'M', "GM");
+
+        while (query_mother_gf.next() &&
+               query_mother_gf_next.next() &&
+               query_mother_gm_next.next() &&
+               query_mother_gm.next())
+        {
+            personId = query_mother_gf.value(1).toInt();
+            fatherId = query_mother_gf_next.value(1).toInt();
+            motherId = query_mother_gm_next.value(1).toInt();
+            databaseHelper.addParents(personId, fatherId, motherId);
+
+            query_mother_gf_next.next();
+            query_mother_gm_next.next();
+            personId = query_mother_gm.value(1).toInt();
+            fatherId = query_mother_gf_next.value(1).toInt();
+            motherId = query_mother_gm_next.value(1).toInt();
+            databaseHelper.addParents(personId, fatherId, motherId);
+        }
+
+        generation++;
+        next_generation++;
+    }
 }

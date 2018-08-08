@@ -31,7 +31,7 @@ bool DatabaseHelper::createConnection()
     return true;
 }
 
-bool DatabaseHelper::addPerson(struct Person::Individual p)
+int DatabaseHelper::addPerson(struct Person::Individual p)
 {
     QString fn = p.firstName;
     QString mn = p.middleName;
@@ -43,7 +43,24 @@ bool DatabaseHelper::addPerson(struct Person::Individual p)
     query.exec("INSERT INTO tblPerson (firstName, middleName, lastName, birthdate, sex)"
                "VALUES('" + fn + "', '" + mn + "', '" + ln + "', '" + bd + "', '" + sex +"')");
 
-    return true;
+    return query.lastInsertId().toInt();
+}
+
+bool DatabaseHelper::addPedigreeConstant(struct Person::PedigreeConstant ped)
+{
+    QSqlQuery qry;
+    qry.prepare("INSERT INTO tblPedigreeConstant (pedPersonId, pedConstant, pedGrandparentChar, pedParentChar, pedGeneration, pedSequence, pedRootId) VALUES (:id, :name, :grandparent, :parent, :generation, :sequence, :root);");
+    qry.bindValue(":id", ped.personId);
+    qry.bindValue(":name", ped.pedigreeConstanName);
+    qry.bindValue(":grandparent", ped.pedigreeConstantGrandparent);
+    qry.bindValue(":parent", ped.pedigreeConstantParent);
+    qry.bindValue(":generation", ped.pedigreeGeneration);
+    qry.bindValue(":sequence", ped.pedigreeSequence);
+    qry.bindValue(":root", ped.pedigreeRootId);
+
+    qry.exec();
+
+            return true;
 }
 
 int DatabaseHelper::getPersonId(struct Person::Individual p)
@@ -145,3 +162,31 @@ int DatabaseHelper::getMotherId(QString fn, QString ln)
      qry.exec();
      return true;
  }
+
+ int DatabaseHelper::getMaxGeneration()
+ {
+     int max;
+     QSqlQuery query;
+     query.exec("SELECT MAX(pedGeneration) FROM tblPedigreeConstant");
+
+     while(query.next())
+     {
+         max = query.value(0).toInt();
+     }
+
+     return max;
+ }
+
+ QSqlQuery DatabaseHelper::getGeneration(int generation, QChar person, QString grandparent)
+ {
+     QSqlQuery query;
+     query.prepare("SELECT * FROM tblPedigreeConstant WHERE pedGeneration = :generation AND pedParentChar = :parent AND pedGrandparentChar = :grandparent" );
+     query.bindValue(":generation", generation );
+     query.bindValue(":parent", person );
+     query.bindValue(":grandparent", grandparent );
+     query.exec();
+
+     return query;
+
+ }
+
