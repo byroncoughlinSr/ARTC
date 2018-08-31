@@ -8,10 +8,32 @@
 #include "person.h"
 
 
+DatabaseHelper *DatabaseHelper::getInstance()
+{
+    if(DatabaseHelper::dbHelper == NULL)
+       DatabaseHelper::dbHelper = new DatabaseHelper();
+    return DatabaseHelper::dbHelper;
+}
+
 DatabaseHelper::DatabaseHelper(QString usernme, QString passWrd)
 {
     DatabaseHelper::userName = usernme;
     DatabaseHelper::passWord = passWrd;   
+}
+
+DatabaseHelper::DatabaseHelper()
+{
+
+}
+
+void DatabaseHelper::setUserId(QString user)
+{
+    DatabaseHelper::userName=user;
+}
+
+void DatabaseHelper::setPassword(QString pwd)
+{
+    DatabaseHelper::passWord=pwd;
 }
 
 
@@ -20,7 +42,7 @@ bool DatabaseHelper::createConnection()
     const QString DRIVER("QMYSQL");
     QSqlDatabase db = QSqlDatabase::addDatabase(DRIVER);
     db.setDatabaseName("artc");
-    db.setHostName("192.168.56.103");
+    db.setHostName("192.168.1.192");
     db.setUserName(userName);
     db.setPassword(passWord);
     db.setDatabaseName("dbArtc");
@@ -189,4 +211,120 @@ int DatabaseHelper::getMotherId(QString fn, QString ln)
      return query;
 
  }
+
+
+
+bool DatabaseHelper::addHostsParents(int id)
+{
+    QString father = "FATHER-" + QString::number(id);
+    QString fathersFather = "FGF0301-" + QString::number(id);
+    QString fathersMother = "FGM0301-" + QString::number(id);
+    int fatherId;
+    int fathersFatherId;
+    int fathersMotherId;
+
+    QString mother = "MOTHER-" + QString::number(id);
+    QString mothersFather = "MGF0301-" + QString::number(id);
+    QString mothersMother = "MGM0301-" + QString::number(id);
+    int motherId;
+    int mothersMotherId;
+    int mothersFatherId;
+
+    QSqlQuery query;
+
+    //get fathers id
+    query.exec("SELECT ID FROM tblPerson WHERE firstName = '" + father + "'");
+    while (query.next())
+    {
+        fatherId = query.value(0).toInt();
+    }
+    //update hosts father id
+    query.prepare("UPDATE tblPerson SET fatherId = :fatherId WHERE ID = :id");
+
+    query.bindValue(":fatherId", fatherId);
+    query.bindValue(":id", id);
+    query.exec();
+
+    //get father's Father id
+    query.exec("SELECT ID FROM tblPerson WHERE firstName = '" + fathersFather + "'");
+    while (query.next())
+    {
+        fathersFatherId = query.value(0).toInt();
+    }
+
+    //update father's father id
+    query.prepare("UPDATE tblPerson SET fatherId = :fatherId WHERE ID = :id");
+
+    query.bindValue(":fatherId", fathersFatherId);
+    query.bindValue(":id", fatherId);
+    query.exec();
+
+    //get father's Mother id
+    query.exec("SELECT ID FROM tblPerson WHERE firstName = '" + fathersMother + "'");
+    while (query.next())
+    {
+        fathersMotherId = query.value(0).toInt();
+    }
+
+    //update father's mother id
+    query.prepare("UPDATE tblPerson SET motherId = :motherId WHERE ID = :id");
+
+    query.bindValue(":motherId", fathersMotherId);
+    query.bindValue(":id", fatherId);
+    query.exec();
+
+
+
+    //get mothers id
+    query.exec("SELECT ID FROM tblPerson WHERE firstName = '" + mother + "'");
+    while (query.next())
+    {
+        motherId = query.value(0).toInt();
+    }
+    //update hosts mother id
+    query.prepare("UPDATE tblPerson SET motherId = :motherId WHERE ID = :id");
+
+    query.bindValue(":motherId", motherId);
+    query.bindValue(":id", id);
+    query.exec();
+
+    //get mothers FatherId
+    query.exec("SELECT ID FROM tblPerson WHERE firstName = '" + mothersFather + "'");
+    while (query.next())
+    {
+        mothersFatherId = query.value(0).toInt();
+    }
+
+    //update mother's father id
+    query.prepare("UPDATE tblPerson SET motherId = :motherId WHERE ID = :id");
+
+    query.bindValue(":motherId", mothersFatherId);
+    query.bindValue(":id", motherId);
+    query.exec();
+
+    //get mothers Mother id
+    query.exec("SELECT ID FROM tblPerson WHERE firstName = '" + mothersMother + "'");
+    while (query.next())
+    {
+        mothersMotherId = query.value(0).toInt();
+    }
+
+    //update mother's mother id
+    query.prepare("UPDATE tblPerson SET fatherId = :motherId WHERE ID = :id");
+
+    query.bindValue(":motherId", mothersMotherId);
+    query.bindValue(":id", motherId);
+    query.exec();
+
+    return true;
+}
+
+QSqlQueryModel *DatabaseHelper::getListView ()
+{
+   QSqlQueryModel *qryModel = new QSqlQueryModel();
+   qryModel->setQuery("SELECT name, ID FROM tblPerson where name <> ''");
+   return qryModel;
+}
+
+
 

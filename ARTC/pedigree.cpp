@@ -31,8 +31,11 @@ void Pedigree::createPedigree(int id, DatabaseHelper databaseHelper)
         nextGeneration(id, databaseHelper);
     }
 
-    //Add mothers side parents
-    addParents('M', databaseHelper);
+    //Add mother and father of host
+   databaseHelper.addHostsParents(id);
+
+    //Add parents in pedigree tree from generation 3 to generation 6
+    addParents(databaseHelper);
 }
 
 void Pedigree::nextGeneration(int id, DatabaseHelper databasehelper)
@@ -129,7 +132,7 @@ void Pedigree::createSide(QChar s, int id, DatabaseHelper databaseHelper)
       }
 }
 
-void Pedigree::addParents(QChar parent, DatabaseHelper databaseHelper)
+void Pedigree::addParents(DatabaseHelper databaseHelper)
 {
     int max_generation;
     int next_generation;
@@ -193,3 +196,5 @@ void Pedigree::addParents(QChar parent, DatabaseHelper databaseHelper)
         next_generation++;
     }
 }
+
+

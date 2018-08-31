@@ -2,10 +2,12 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include "glob.h"
+#include <QGraphicsView>
 #include "databasehelper.h"
 #include "login.h"
 #include "pedigree.h"
+#include <QGraphicsScene>
+
 
 namespace Ui {
 class MainWindow;
@@ -21,17 +23,25 @@ public:
     ~MainWindow();
 
     Pedigree pedigree;
+
     DatabaseHelper databaseHelper = DatabaseHelper(login.getUsername(), login.getPassword());
+    QSqlQueryModel *model=new QSqlQueryModel;
+
 
 
 private slots:
     void on_action_New_Host_triggered();
+    void on_individualListView_doubleClicked(const QModelIndex &index);
 
+    void on_actionPedigree_triggered();
 
 private:
     Ui::MainWindow *ui;
+    QGraphicsView *view;
     QString *uname;
     QString *pword;
+    QGraphicsScene *scene;
+    QGraphicsRectItem *rect;
 };
 
 #endif // MAINWINDOW_H

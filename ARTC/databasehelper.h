@@ -2,11 +2,15 @@
 #define DATABASEHELPER_H
 #include "person.h"
 #include <QSqlDatabase>
+#include <QSqlQueryModel>
 
 class DatabaseHelper
 {
+     static DatabaseHelper *dbHelper;
 public:
     DatabaseHelper(QString, QString);
+    void setUserId(QString user);
+    void setPassword(QString pwd);
     bool createConnection();
     int addPerson(struct Person::Individual p);
     bool addPedigreeConstant(struct Person::PedigreeConstant);
@@ -18,9 +22,13 @@ public:
     int getMotherId(QString fn, QString ln);
     bool addParents(int person, int fatherId, int motherId);
     int getMaxGeneration();
+    bool addHostsParents(int id);
     QSqlQuery getGeneration(int generatoin, QChar person, QString grandparent);
+    QSqlQueryModel *getListView();
+    static DatabaseHelper *getInstance();
 
  private:
+    DatabaseHelper();
     QString userName;
     QString passWord;
 };

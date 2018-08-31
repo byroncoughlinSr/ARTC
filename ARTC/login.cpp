@@ -1,5 +1,6 @@
 #include "login.h"
 #include "ui_login.h"
+#include "databasehelper.h"
 
 Login::Login(QWidget *parent) :
     QDialog(parent),
@@ -15,8 +16,14 @@ Login::~Login()
 
 void Login::on_pushButton_clicked()
 {
+    DatabaseHelper *dbHelper = DatabaseHelper::getInstance();
+
     username=ui->lineEdit_username->text();
     password=ui->lineEdit_password->text();
+
+    dbHelper->setUserId(username);
+    dbHelper->setPassword(password);
+
     close();
 }
 

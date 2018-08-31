@@ -17,7 +17,8 @@ public:
    void createPedigree(int id, DatabaseHelper databaseHelper);
    void nextGeneration(int id, DatabaseHelper databasehelper);
    void createSide(QChar s, int id, DatabaseHelper databaseHelper);
-   void addParents(QChar parent, DatabaseHelper databaseHelper);
+   void addParents(DatabaseHelper databaseHelper);
+
 
 private:
    Person::Individual new_person;

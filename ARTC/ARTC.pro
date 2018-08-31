@@ -30,7 +30,9 @@ SOURCES += \
     databasehelper.cpp \
     person.cpp \
     pedigree.cpp \
-    login.cpp
+    login.cpp \
+    pedigreetreepaint.cpp \
+    personlistdialog.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -38,12 +40,15 @@ HEADERS += \
     databasehelper.h \
     person.h \
     pedigree.h \
-    login.h
+    login.h \
+    pedigreetreepaint.h \
+    personlistdialog.h
 
 FORMS += \
         mainwindow.ui \
     hostdlg.ui \
-    login.ui
+    login.ui \
+    personlistdialog.ui
 
 RESOURCES += \
     resources.qrc
