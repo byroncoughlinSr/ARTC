@@ -20,8 +20,8 @@ MainWindow::MainWindow(QWidget *parent) :
     databaseHelper->createConnection();
 
     ui->setupUi(this);
-    model=databaseHelper->getListView();
-    ui->individualListView->setModel(model);
+   // model=databaseHelper->getListView();
+  //  ui->individualListView->setModel(model);
 
     scene = new QGraphicsScene(this);
     ui->graphicsView->setScene(scene);
@@ -38,14 +38,15 @@ void MainWindow::on_action_New_Host_triggered()
 {
     int hostId;
     Hostdlg hostdlg;
+    DatabaseHelper *databaseHelper = DatabaseHelper::getInstance();
 
     hostdlg.setModal(true);
     hostdlg.exec();
 
-    databaseHelper.addPerson(hostdlg.getHost());
-    hostId = databaseHelper.getPersonId(hostdlg.getHost());
-    databaseHelper.setHost(hostId);
-    pedigree.createPedigree(hostId, databaseHelper);
+    databaseHelper->addPerson(hostdlg.getHost());
+    hostId = databaseHelper->getPersonId(hostdlg.getHost());
+    databaseHelper->setHost(hostId);
+    pedigree.createPedigree(hostId);
 }
 
 void MainWindow::on_individualListView_doubleClicked(const QModelIndex &index)

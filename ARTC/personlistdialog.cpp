@@ -11,10 +11,8 @@ PersonListDialog::PersonListDialog(QWidget *parent) :
 {
     DatabaseHelper *databaseHelper = DatabaseHelper::getInstance();
     model=databaseHelper->getListView();
-    qDebug() << "Name" << model->record(0).value("name");
 
     ui->setupUi(this);
-
     ui->personListView->setModel(model);
 }
 
@@ -22,3 +20,6 @@ PersonListDialog::~PersonListDialog()
 {
     delete ui;
 }
+
+
+

@@ -58,12 +58,13 @@ int DatabaseHelper::addPerson(struct Person::Individual p)
     QString fn = p.firstName;
     QString mn = p.middleName;
     QString ln =p.lastName;
+    QString name = p.name;
     QString bd = p.birthdate.toString("yyyy.MM.dd");
     QChar sex = p.sex;
 
     QSqlQuery query;
-    query.exec("INSERT INTO tblPerson (firstName, middleName, lastName, birthdate, sex)"
-               "VALUES('" + fn + "', '" + mn + "', '" + ln + "', '" + bd + "', '" + sex +"')");
+    query.exec("INSERT INTO tblPerson (firstName, middleName, lastName, name, birthdate, sex)"
+               "VALUES('" + fn + "', '" + mn + "', '" + ln + "',  '" + name + "','" + bd + "', '" + sex +"')");
 
     return query.lastInsertId().toInt();
 }

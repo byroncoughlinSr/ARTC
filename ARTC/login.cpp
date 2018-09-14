@@ -27,12 +27,3 @@ void Login::on_pushButton_clicked()
     close();
 }
 
-QString Login::getUsername()
-{
-    return username;
-}
-
-QString Login::getPassword()
-{
-    return password;
-}

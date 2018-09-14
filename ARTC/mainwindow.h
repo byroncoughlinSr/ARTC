@@ -24,7 +24,6 @@ public:
 
     Pedigree pedigree;
 
-    DatabaseHelper databaseHelper = DatabaseHelper(login.getUsername(), login.getPassword());
     QSqlQueryModel *model=new QSqlQueryModel;
 
 

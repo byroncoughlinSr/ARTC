@@ -13,11 +13,12 @@ public:
     int generation;
     int max_number;
     int person;
+    DatabaseHelper *databaseHelper;
 
-   void createPedigree(int id, DatabaseHelper databaseHelper);
-   void nextGeneration(int id, DatabaseHelper databasehelper);
-   void createSide(QChar s, int id, DatabaseHelper databaseHelper);
-   void addParents(DatabaseHelper databaseHelper);
+   void createPedigree(int id);
+   void nextGeneration(int id);
+   void createSide(QChar s, int id);
+   void addParents();
 
 
 private:

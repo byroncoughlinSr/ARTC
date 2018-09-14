@@ -16,6 +16,8 @@ public:
     explicit PersonListDialog(QWidget *parent = 0);
     ~PersonListDialog();
 
+private slots:
+
 private:
     Ui::PersonListDialog *ui;
      QSqlQueryModel *model=new QSqlQueryModel;

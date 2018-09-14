@@ -17,8 +17,6 @@ private:
 public:
     explicit Login(QWidget *parent = 0);
     ~Login();
-    QString getUsername();
-    QString getPassword();
 
 private slots:
     void on_pushButton_clicked();
