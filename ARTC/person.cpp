@@ -50,7 +50,7 @@ void Person::setSex(char s)
     individual.sex = s;
 }
 
-char Person::getSex()
+QChar Person::getSex()
 {
     return individual.sex;
 }

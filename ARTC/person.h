@@ -17,7 +17,7 @@ public:
     QString middleName;
     QString lastName;
     QString alias;
-    char sex;
+    QChar sex;
     QDate birthdate;
     int motherId;
     int fatherId;
@@ -45,7 +45,7 @@ void setName(QString);
 QString getAlias();
 void setAlias(QString);
 void setSex(char s);
-char getSex();
+QChar getSex();
 void setMother(int id);
 int getMotherId();
 void setPersonId(int id);

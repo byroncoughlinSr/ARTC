@@ -15,6 +15,7 @@ public:
     int addPerson(struct Person::Individual p);
     bool addPedigreeConstant(struct Person::PedigreeConstant);
     int getPersonId(struct Person::Individual);
+    Person::Individual getPersonFromId(int id);
     bool setHost(int id);
     bool addMother(int id);
     bool addFather(int id);

@@ -32,7 +32,11 @@ SOURCES += \
     pedigree.cpp \
     login.cpp \
     pedigreetreepaint.cpp \
-    personlistdialog.cpp
+    personlistdialog.cpp \
+    linkedlist.cpp \
+    pedigreetreewidget.cpp \
+    linkedlist_struct_item.cpp \
+    leaf.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -42,7 +46,11 @@ HEADERS += \
     pedigree.h \
     login.h \
     pedigreetreepaint.h \
-    personlistdialog.h
+    personlistdialog.h \
+    linkedlist.h \
+    pedigreetreewidget.h \
+    linkedlist_struct_item.h \
+    leaf.h
 
 FORMS += \
         mainwindow.ui \

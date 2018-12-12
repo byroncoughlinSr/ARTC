@@ -71,7 +71,10 @@ void Pedigree::createSide(QChar s, int id)
     int num;
     int parent;
     int per;
-
+    while (generation < 7)
+    {
+        nextGeneration(id);
+    }
     num = max_number/2;
     parent = 1;
 

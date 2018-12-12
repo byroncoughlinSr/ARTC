@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QGraphicsView>
 #include "databasehelper.h"
+#include "pedigreetreepaint.h"
 #include "login.h"
 #include "pedigree.h"
 #include <QGraphicsScene>
@@ -26,8 +27,6 @@ public:
 
     QSqlQueryModel *model=new QSqlQueryModel;
 
-
-
 private slots:
     void on_action_New_Host_triggered();
     void on_individualListView_doubleClicked(const QModelIndex &index);
@@ -36,6 +35,7 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
+    pedigreeTreePaint *tree;
     QGraphicsView *view;
     QString *uname;
     QString *pword;

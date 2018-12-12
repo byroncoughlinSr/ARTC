@@ -7,7 +7,10 @@
 #include <QDate>
 #include "person.h"
 
-
+/*!
+ * \brief DatabaseHelper::getInstance
+ * \return
+ */
 DatabaseHelper *DatabaseHelper::getInstance()
 {
     if(DatabaseHelper::dbHelper == NULL)
@@ -26,6 +29,10 @@ DatabaseHelper::DatabaseHelper()
 
 }
 
+/*!
+ * \brief DatabaseHelper::setUserId
+ * \param user
+ */
 void DatabaseHelper::setUserId(QString user)
 {
     DatabaseHelper::userName=user;
@@ -86,6 +93,11 @@ bool DatabaseHelper::addPedigreeConstant(struct Person::PedigreeConstant ped)
             return true;
 }
 
+/*!
+ * \brief DatabaseHelper::getPersonId
+ * \param p
+ * \return
+ */
 int DatabaseHelper::getPersonId(struct Person::Individual p)
 {
     QString fn = p.firstName;
@@ -104,6 +116,41 @@ int DatabaseHelper::getPersonId(struct Person::Individual p)
     return id;
 }
 
+/*!
+ * \brief DatabaseHelper::getPersonFromId
+ * \param id
+ * \return
+ */
+Person::Individual DatabaseHelper::getPersonFromId(int id)
+{
+    QSqlQuery query;
+    Person::Individual p;
+    query.prepare("SELECT * FROM tblPerson WHERE ID = :id;");
+
+    query.bindValue(":id", id);
+    query.exec();
+
+    while (query.next())
+    {
+        p.id = query.value(0).toInt();
+        p.firstName = query.value(1).toString();
+        p.middleName = query.value(2).toString();
+        p.lastName = query.value(3).toString();
+        p.birthdate = query.value(4).toDate();
+        p.sex = query.value(5).toChar();
+        p.name = query.value(6).toString();
+        p.alias = query.value(7).toString();
+        p.motherId = query.value(8).toInt();
+        p.fatherId = query.value(9).toInt();
+    }
+    return p;
+}
+
+/*!
+ * \brief DatabaseHelper::setHost
+ * \param hostId
+ * \return
+ */
 bool DatabaseHelper::setHost(int hostId)
 {
     QSqlQuery qry;

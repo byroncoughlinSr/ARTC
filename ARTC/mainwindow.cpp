@@ -5,11 +5,14 @@
 #include "login.h"
 #include "databasehelper.h"
 #include "personlistdialog.h"
+#include "pedigreetreepaint.h"
+#include "linkedlist.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
+
     Login login;
 
     //Run login dialog
@@ -23,10 +26,15 @@ MainWindow::MainWindow(QWidget *parent) :
    // model=databaseHelper->getListView();
   //  ui->individualListView->setModel(model);
 
+    /* Initialize a widget with graphics */
+    tree   = new pedigreeTreePaint();
     scene = new QGraphicsScene(this);
     ui->graphicsView->setScene(scene);
-    scene->addRect(10,10,100,100);
+    tree->createTree(1, scene);
 
+
+
+   // scene->addRect(10,10,100,100);
 }
 
 MainWindow::~MainWindow()
