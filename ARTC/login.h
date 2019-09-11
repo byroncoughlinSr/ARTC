@@ -2,6 +2,7 @@
 #define LOGIN_H
 
 #include <QDialog>
+#include "databasehelper.h"
 
 namespace Ui {
 class Login;
@@ -19,6 +20,7 @@ public:
     ~Login();
     QString getUsername();
     QString getPassword();
+    DatabaseHelper databaseHelper = DatabaseHelper(username, password);
 
 private slots:
     void on_pushButton_clicked();

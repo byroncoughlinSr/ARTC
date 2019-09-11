@@ -11,32 +11,21 @@ public:
 
 public:
     struct Individual {
-    int id;
-    QString name;
-    QString firstName;
-    QString middleName;
-    QString lastName;
-    QString alias;
-    char sex;
+    int id = 0;
+    QString name = NULL;
+    QString firstName = NULL;
+    QString middleName = NULL;
+    QString lastName = NULL;
+    QString alias = NULL;
+    QChar sex;
     QDate birthdate;
-    int motherId;
-    int fatherId;
+    QDate deathdate;
+    int motherId = 0;
+    int fatherId = 0;
+    Individual* next = NULL;
     };
 
-
-   public:
-    QString getFirstName(Individual);
-    void setFirstName(QString, Individual i);
-    QString getLastName();
-    void setLastName(QString, Individual);
-    QString getName();
-    void setName(QString, Individual);
-    QString getAlias();
-    void setAlias(QString, Individual);
-    void setSex(char, Individual);
-    char* getSex();
-    void setMother(int id, Person::Individual individual);
-    int getMotherId(Person::Individual individual);
+    public:
 };
 
 #endif // PERSON_H

@@ -22,8 +22,6 @@ Hostdlg::~Hostdlg()
  */
 void Hostdlg::on_buttonBox_accepted()
 {
-    int hostId;
-
     host.firstName = ui->firstNameTxt->toPlainText();
     host.middleName = ui->middleNameTxt->toPlainText();
     host.lastName = ui->lastNameTxt->toPlainText();
