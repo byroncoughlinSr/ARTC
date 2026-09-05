@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ARTC application icon.
+
+  A three-generation pedigree chart, drawn with the notation the design
+  document specifies: a square is male, a circle is female. The gold node at
+  the base is the host — the root person every DNA match relates to.
+
+  Flat fills only: gradients are rendered inconsistently by the various SVG
+  back ends an icon passes through, and add nothing at 22px.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <rect x="2" y="2" width="60" height="60" rx="13" fill="#1E3A5F"/>
+
+  <g stroke="#FFFFFF" stroke-opacity="0.85" stroke-width="2"
+     stroke-linecap="round" fill="none">
+    <!-- host up to the parent generation -->
+    <path d="M32 43 V40.5 M18 40.5 H46 M18 40.5 V39.5 M46 40.5 V39.5"/>
+    <!-- father up to his parents -->
+    <path d="M18 28.5 V26 M12 26 H24 M12 26 V22 M24 26 V22"/>
+    <!-- mother up to her parents -->
+    <path d="M46 28.5 V26 M40 26 H52 M40 26 V22 M52 26 V22"/>
+  </g>
+
+  <g fill="#FFFFFF">
+    <!-- grandparents -->
+    <rect x="8" y="14" width="8" height="8" rx="1.2"/>
+    <circle cx="24" cy="18" r="4"/>
+    <rect x="36" y="14" width="8" height="8" rx="1.2"/>
+    <circle cx="52" cy="18" r="4"/>
+    <!-- parents -->
+    <rect x="12.5" y="28.5" width="11" height="11" rx="1.6"/>
+    <circle cx="46" cy="34" r="5.5"/>
+  </g>
+
+  <!-- the host -->
+  <circle cx="32" cy="49" r="6" fill="#E8B44A"/>
+</svg>

@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=ARTC
+GenericName=Pedigree Chart Builder
+Comment=Build a pedigree chart from your DNA relatives
+Exec=@EXEC@
+Icon=artc
+Terminal=false
+Categories=Office;Database;
+Keywords=genealogy;pedigree;ancestry;family;tree;DNA;
+StartupNotify=true
+StartupWMClass=ARTC
