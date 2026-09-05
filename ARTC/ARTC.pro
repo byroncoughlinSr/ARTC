@@ -30,7 +30,11 @@ SOURCES += \
     databasehelper.cpp \
     person.cpp \
     pedigree.cpp \
-    login.cpp
+    login.cpp \
+    uitheme.cpp \
+    homewidget.cpp \
+    signinwidget.cpp \
+    registerwidget.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -38,7 +42,11 @@ HEADERS += \
     databasehelper.h \
     person.h \
     pedigree.h \
-    login.h
+    login.h \
+    uitheme.h \
+    homewidget.h \
+    signinwidget.h \
+    registerwidget.h
 
 FORMS += \
         mainwindow.ui \

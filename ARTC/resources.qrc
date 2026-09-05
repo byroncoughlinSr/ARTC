@@ -7,4 +7,7 @@
         <file>images/cut.png</file>
         <file>images/copy.png</file>
     </qresource>
+    <qresource prefix="/">
+        <file>styles/artc.qss</file>
+    </qresource>
 </RCC>

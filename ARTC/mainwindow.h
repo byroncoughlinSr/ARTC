@@ -3,32 +3,68 @@
 
 #include <QMainWindow>
 #include "databasehelper.h"
-#include "login.h"
 #include "person.h"
+#include "registerwidget.h"
+
+class HomeWidget;
+class QLabel;
+class QStackedWidget;
+class RegisterWidget;
+class SignInWidget;
 
 namespace Ui {
 class MainWindow;
 }
 
+/**
+ * @brief Application shell and screen router.
+ *
+ * Holds every screen in a QStackedWidget and moves between them. The menu bar
+ * and tool bar belong to the workspace, so they stay hidden until a sign-in
+ * has succeeded.
+ */
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
 public:
-    Login login;
-     explicit MainWindow(QWidget *parent = 0);
+    explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
-   DatabaseHelper databaseHelper = DatabaseHelper(login.getUsername(), login.getPassword());
-   Person::Individual person;
+
+    DatabaseHelper databaseHelper = DatabaseHelper(QString(), QString());
+    Person::Individual person;
 
 private slots:
     void on_action_New_Host_triggered();
 
+    /** @brief Open the database with @p username / @p password. */
+    void attemptSignIn(const QString &username, const QString &password);
+
+    /** @brief Report that account storage does not exist yet. */
+    void handleRegistration(const RegistrationDetails &details);
+
+    void showHome();
+    void showSignIn();
+    void showRegister();
+    void signOut();
 
 private:
+    /** @brief Build the post-sign-in workspace page. */
+    QWidget *createWorkspacePage();
+
+    /** @brief Wire every screen's navigation signals to this window. */
+    void connectScreens();
+
+    /** @brief Show or hide the workspace chrome. */
+    void setWorkspaceChromeVisible(bool visible);
+
     Ui::MainWindow *ui;
-    QString *uname;
-    QString *pword;
+    QStackedWidget *screens;
+    HomeWidget *homeScreen;
+    SignInWidget *signInScreen;
+    RegisterWidget *registerScreen;
+    QWidget *workspaceScreen;
+    QLabel *workspaceGreeting;
     Person::Individual father;
     Person::Individual mother;
 };
