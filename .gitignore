@@ -1,0 +1,30 @@
+# Local configuration — holds database credentials. Copy config.ini.example.
+config.ini
+
+# qmake / Qt Creator build output
+build-*/
+*.o
+*.so
+moc_*.cpp
+moc_*.h
+qrc_*.cpp
+ui_*.h
+Makefile
+.qmake.stash
+*.pro.user
+*.pro.user.*
+.qtcreator/
+.qtc_clangd/
+
+# IDEs
+.idea/
+.vscode/
+
+# Python connectivity probe
+venv/
+__pycache__/
+*.py[cod]
+
+# Database dumps — schema.sql is committed, data dumps are not
+dbArtc-backup-*.sql
+*.sql.gz
