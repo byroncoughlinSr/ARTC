@@ -4,32 +4,114 @@
 #include <QMessageBox>
 #include <QtSql>
 #include <QDate>
+#include <QCoreApplication>
+#include <QDir>
+#include <QFileInfo>
+#include <QSettings>
 #include "person.h"
 #include "databasehelper.h"
+
+
+namespace {
+
+/**
+ * @brief Locate config.ini.
+ *
+ * Checked in order: $ARTC_CONFIG, then beside the executable, then one
+ * directory up — the shadow-build layout, where the binary sits in
+ * build-ARTC-Desktop-Debug/ and the file in the project root.
+ *
+ * @return path to the file, or an empty string if none was found
+ */
+QString locateConfigFile()
+{
+    const QString fromEnv = qEnvironmentVariable("ARTC_CONFIG");
+    if (!fromEnv.isEmpty()) {
+        return fromEnv;
+    }
+
+    const QDir appDir(QCoreApplication::applicationDirPath());
+    const QStringList candidates = {
+        appDir.filePath("config.ini"),
+        appDir.filePath("../config.ini"),
+    };
+
+    for (const QString &candidate : candidates) {
+        if (QFileInfo::exists(candidate)) {
+            return QDir::cleanPath(candidate);
+        }
+    }
+
+    return QString();
+}
+
+} // namespace
 
 
 DatabaseHelper::DatabaseHelper(QString usernme, QString passWrd)
 {
     DatabaseHelper::userName = usernme;
-    DatabaseHelper::passWord = passWrd;   
+    DatabaseHelper::passWord = passWrd;
+}
+
+/**
+ * @brief DatabaseHelper::lastError
+ * @return why the most recent createConnection() call failed
+ */
+QString DatabaseHelper::lastError() const
+{
+    return errorText;
 }
 
 /**
  * @brief DatabaseHelper::createConnection
- * @return
+ *
+ * The connection target comes from the [connector_artc] group of config.ini;
+ * the credentials come from the sign-in screen. Failures are reported through
+ * lastError() rather than a dialog, so the caller chooses how to show them.
+ *
+ * @return true if the database was opened
  */
 bool DatabaseHelper::createConnection()
 {
-    const QString DRIVER("QMYSQL");
-    db = QSqlDatabase::addDatabase(DRIVER);
-    db.setHostName("172.28.1.5");
-    db.setUserName(userName);
-    db.setPassword(passWord);
-    db.setDatabaseName("dbArtc");
-    if (!db.open()) {
-        QMessageBox::critical(0, QObject::tr("Database Error"), db.lastError().text());
+    errorText.clear();
+
+    const QString configPath = locateConfigFile();
+    if (configPath.isEmpty()) {
+        errorText = QObject::tr("No config.ini found. Copy config.ini.example, or set "
+                                "ARTC_CONFIG to the file's path.");
         return false;
     }
+
+    QSettings config(configPath, QSettings::IniFormat);
+    config.beginGroup("connector_artc");
+    const QString host = config.value("host", "127.0.0.1").toString();
+    const int port = config.value("port", 3306).toInt();
+    const QString database = config.value("database", "dbArtc").toString();
+    config.endGroup();
+
+    const QString DRIVER("QMYSQL");
+    if (!QSqlDatabase::isDriverAvailable(DRIVER)) {
+        errorText = QObject::tr("The %1 driver is not available. Qt is missing its MySQL "
+                                "plugin.").arg(DRIVER);
+        return false;
+    }
+
+    db = QSqlDatabase::addDatabase(DRIVER);
+    db.setHostName(host);
+    db.setPort(port);
+    db.setUserName(userName);
+    db.setPassword(passWord);
+    db.setDatabaseName(database);
+
+    if (!db.open()) {
+        errorText = QObject::tr("Could not open %1 at %2:%3 as '%4'.\n"
+                                "Settings read from %5.\n\n%6")
+                        .arg(database, host, QString::number(port), userName,
+                             configPath, db.lastError().text());
+        return false;
+    }
+
     return true;
 }
 

@@ -1,0 +1,16 @@
+# Copy to config.ini and edit. config.ini is gitignored.
+#
+# Read by both the Qt application (DatabaseHelper::createConnection, via
+# QSettings) and mysql-test.py (via mysql.connector option_files), so the
+# group name and key names must stay as they are.
+#
+# The application takes host/port/database from here and gets the username
+# and password from its login dialog, so user/password below are only used
+# by mysql-test.py.
+
+[connector_artc]
+host=127.0.0.1
+port=3306
+database=dbArtc
+user=artc
+password=CHANGEME

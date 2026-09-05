@@ -10,6 +10,7 @@ class DatabaseHelper
 public:
     DatabaseHelper(QString, QString);
     bool createConnection();
+    QString lastError() const;
     bool addPerson(struct Person::Individual p);
     int getPersonId(struct Person::Individual);
     Person::Individual *getPerson(int id);
@@ -26,6 +27,7 @@ public:
  private:
     QString userName;
     QString passWord;
+    QString errorText;
     QSqlDatabase db;
     QSqlQuery query;
     int result;
