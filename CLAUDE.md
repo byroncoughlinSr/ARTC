@@ -16,13 +16,14 @@ reconstruction, not a mature codebase.
 
 ## Build and run
 
-**qmake + Qt 6.3.1** (Qt 6.4.0 is also installed under `/usr/local/share/QT/`). There is no
+**qmake + Qt 6.4.0.** Use 6.4.0, not the 6.3.1 also installed under
+`/usr/local/share/QT/`: only 6.4.0 has a working MySQL driver here (see below). There is no
 CMake, no CI, and **no test suite or linter** — don't look for one, and don't claim to have
 run tests.
 
 ```bash
 cd build-ARTC-Desktop-Debug
-/usr/local/share/QT/6.3.1/gcc_64/bin/qmake -o Makefile ../ARTC/ARTC.pro \
+/usr/local/share/QT/6.4.0/gcc_64/bin/qmake -o Makefile ../ARTC/ARTC.pro \
     -spec linux-g++ CONFIG+=debug
 make -j$(nproc)
 ./ARTC
@@ -91,6 +92,12 @@ SignInWidget ── signInRequested ─────►│
                                       ▼
                        Hostdlg → DatabaseHelper → Pedigree::createPedigree
 ```
+
+**Word-wrapped labels must be `WrappingLabel`** (`uitheme.h`), not `QLabel`. A wrapped
+QLabel reports about one line as its minimum size, so the fixed-width cards collapse around
+it and clip the remaining lines. `WrappingLabel` pins its minimum height to
+`heightForWidth()` at the card's content width. Correcting `minimumSizeHint()` alone is not
+enough — a layout that has already sized the widget will not revisit it.
 
 **Two database layers, deliberately not merged.** `AccountRepository` (accounts) uses
 prepared statements throughout. `DatabaseHelper` (pedigree) is legacy and builds half its

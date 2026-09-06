@@ -8,6 +8,12 @@
 #include <QPushButton>
 #include <QVBoxLayout>
 
+namespace {
+constexpr int CardWidth = 440;
+constexpr int CardMargin = 40;
+constexpr int ContentWidth = CardWidth - 2 * CardMargin;
+}
+
 SignInWidget::SignInWidget(QWidget *parent) :
     QWidget(parent)
 {
@@ -16,15 +22,15 @@ SignInWidget::SignInWidget(QWidget *parent) :
 
     auto *card = new QFrame(this);
     card->setObjectName(QStringLiteral("card"));
-    card->setFixedWidth(440);
+    card->setFixedWidth(CardWidth);
     UiTheme::applyCardShadow(card);
 
     auto *title = new QLabel(tr("Sign in"), card);
     title->setObjectName(QStringLiteral("screenTitle"));
 
-    auto *blurb = new QLabel(tr("Sign in with the account you created."), card);
+    auto *blurb = new WrappingLabel(tr("Sign in with the account you created."),
+                                    ContentWidth, card);
     blurb->setObjectName(QStringLiteral("bodyText"));
-    blurb->setWordWrap(true);
 
     emailEdit = new QLineEdit(card);
     emailEdit->setPlaceholderText(tr("you@example.com"));
@@ -33,9 +39,8 @@ SignInWidget::SignInWidget(QWidget *parent) :
     passwordEdit->setEchoMode(QLineEdit::Password);
     passwordEdit->setPlaceholderText(tr("Password"));
 
-    errorLabel = new QLabel(card);
+    errorLabel = new WrappingLabel(QString(), ContentWidth, card);
     errorLabel->setObjectName(QStringLiteral("errorLabel"));
-    errorLabel->setWordWrap(true);
     errorLabel->hide();
 
     signInButton = new QPushButton(tr("Sign In"), card);
@@ -59,7 +64,7 @@ SignInWidget::SignInWidget(QWidget *parent) :
     actions->addWidget(signInButton);
 
     auto *cardLayout = new QVBoxLayout(card);
-    cardLayout->setContentsMargins(40, 36, 40, 32);
+    cardLayout->setContentsMargins(CardMargin, 36, CardMargin, 32);
     cardLayout->setSpacing(0);
     cardLayout->addWidget(title);
     cardLayout->addSpacing(8);

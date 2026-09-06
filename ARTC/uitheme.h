@@ -1,10 +1,44 @@
 #ifndef UITHEME_H
 #define UITHEME_H
 
+#include <QLabel>
 #include <QString>
 
-class QLabel;
 class QWidget;
+
+/**
+ * @brief A word-wrapped label that reports an honest minimum height.
+ *
+ * A plain wrapped QLabel reports roughly one line as its minimum size, so a
+ * fixed-width card laid out around it collapses to that height and clips the
+ * remaining lines. Reporting heightForWidth() at the card's content width
+ * makes the surrounding layout reserve the right space, and re-reports it
+ * whenever the text changes.
+ */
+class WrappingLabel : public QLabel
+{
+    Q_OBJECT
+
+public:
+    /**
+     * @param text initial text
+     * @param contentWidth width the text will be laid out at, inside margins
+     * @param parent owning widget
+     */
+    WrappingLabel(const QString &text, int contentWidth, QWidget *parent = nullptr);
+
+    QSize minimumSizeHint() const override;
+
+protected:
+    void showEvent(QShowEvent *event) override;
+    void resizeEvent(QResizeEvent *event) override;
+
+private:
+    /** Pin the minimum height to what the wrapped text actually needs. */
+    void updateWrapHeight();
+
+    int contentWidth;
+};
 
 /**
  * @brief Shared look-and-feel helpers used by every screen.

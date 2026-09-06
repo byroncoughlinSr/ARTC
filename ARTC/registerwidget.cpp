@@ -13,6 +13,10 @@
 
 namespace {
 
+constexpr int CardWidth = 580;
+constexpr int CardMargin = 40;
+constexpr int ContentWidth = CardWidth - 2 * CardMargin;
+
 /** Shortest password the form will accept. */
 constexpr int MinimumPasswordLength = 8;
 
@@ -41,16 +45,16 @@ RegisterWidget::RegisterWidget(QWidget *parent) :
 
     auto *card = new QFrame(this);
     card->setObjectName(QStringLiteral("card"));
-    card->setFixedWidth(580);
+    card->setFixedWidth(CardWidth);
     UiTheme::applyCardShadow(card);
 
     auto *title = new QLabel(tr("Create your account"), card);
     title->setObjectName(QStringLiteral("screenTitle"));
 
-    auto *blurb = new QLabel(tr("Enter the name as it appears on your birth certificate — "
-                                "it becomes the root of your pedigree chart."), card);
+    auto *blurb = new WrappingLabel(tr("Enter the name as it appears on your birth "
+                                       "certificate — it becomes the root of your "
+                                       "pedigree chart."), ContentWidth, card);
     blurb->setObjectName(QStringLiteral("bodyText"));
-    blurb->setWordWrap(true);
 
 
     firstNameEdit = new QLineEdit(card);
@@ -92,9 +96,8 @@ RegisterWidget::RegisterWidget(QWidget *parent) :
     form->setColumnStretch(0, 1);
     form->setColumnStretch(1, 1);
 
-    errorLabel = new QLabel(card);
+    errorLabel = new WrappingLabel(QString(), ContentWidth, card);
     errorLabel->setObjectName(QStringLiteral("errorLabel"));
-    errorLabel->setWordWrap(true);
     errorLabel->hide();
 
     auto *createButton = new QPushButton(tr("Create Account"), card);
@@ -118,7 +121,7 @@ RegisterWidget::RegisterWidget(QWidget *parent) :
     actions->addWidget(createButton);
 
     auto *cardLayout = new QVBoxLayout(card);
-    cardLayout->setContentsMargins(40, 36, 40, 32);
+    cardLayout->setContentsMargins(CardMargin, 36, CardMargin, 32);
     cardLayout->setSpacing(0);
     cardLayout->addWidget(title);
     cardLayout->addSpacing(8);

@@ -6,6 +6,11 @@
 #include <QPushButton>
 #include <QVBoxLayout>
 
+namespace {
+constexpr int CardWidth = 440;
+constexpr int CardMargin = 40;
+}
+
 HomeWidget::HomeWidget(QWidget *parent) :
     QWidget(parent)
 {
@@ -14,7 +19,7 @@ HomeWidget::HomeWidget(QWidget *parent) :
 
     auto *card = new QFrame(this);
     card->setObjectName(QStringLiteral("card"));
-    card->setFixedWidth(440);
+    card->setFixedWidth(CardWidth);
     UiTheme::applyCardShadow(card);
 
     auto *monogram = UiTheme::createMonogram(QStringLiteral("ARTC"), card);
@@ -27,11 +32,11 @@ HomeWidget::HomeWidget(QWidget *parent) :
     subtitle->setObjectName(QStringLiteral("subtitle"));
     subtitle->setAlignment(Qt::AlignCenter);
 
-    auto *blurb = new QLabel(tr("Build a pedigree chart from your DNA relatives and "
-                                "trace how each match connects to you."), card);
+    auto *blurb = new WrappingLabel(tr("Build a pedigree chart from your DNA relatives and "
+                                       "trace how each match connects to you."),
+                                    CardWidth - 2 * CardMargin, card);
     blurb->setObjectName(QStringLiteral("bodyText"));
     blurb->setAlignment(Qt::AlignCenter);
-    blurb->setWordWrap(true);
 
     auto *signInButton = new QPushButton(tr("Sign In"), card);
     signInButton->setObjectName(QStringLiteral("primaryButton"));
@@ -47,7 +52,7 @@ HomeWidget::HomeWidget(QWidget *parent) :
     footer->setAlignment(Qt::AlignCenter);
 
     auto *cardLayout = new QVBoxLayout(card);
-    cardLayout->setContentsMargins(40, 44, 40, 32);
+    cardLayout->setContentsMargins(CardMargin, 44, CardMargin, 32);
     cardLayout->setSpacing(0);
     cardLayout->addWidget(monogram, 0, Qt::AlignHCenter);
     cardLayout->addSpacing(22);

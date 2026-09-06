@@ -53,33 +53,36 @@ MainWindow::~MainWindow()
  */
 QWidget *MainWindow::createWorkspacePage()
 {
+    constexpr int CardWidth = 560;
+    constexpr int CardMargin = 40;
+    constexpr int ContentWidth = CardWidth - 2 * CardMargin;
+
     auto *page = new QWidget(this);
     page->setObjectName(QStringLiteral("screen"));
     page->setAttribute(Qt::WA_StyledBackground, true);
 
     auto *card = new QFrame(page);
     card->setObjectName(QStringLiteral("card"));
-    card->setFixedWidth(560);
+    card->setFixedWidth(CardWidth);
     UiTheme::applyCardShadow(card);
 
     auto *title = new QLabel(tr("Workspace"), card);
     title->setObjectName(QStringLiteral("screenTitle"));
 
-    workspaceGreeting = new QLabel(card);
+    workspaceGreeting = new WrappingLabel(QString(), ContentWidth, card);
     workspaceGreeting->setObjectName(QStringLiteral("bodyText"));
-    workspaceGreeting->setWordWrap(true);
 
-    auto *hint = new QLabel(tr("Choose File → New Host to enter the root person and "
-                               "generate their pedigree chart."), card);
+    auto *hint = new WrappingLabel(tr("Choose File → New Host to enter the root person "
+                                      "and generate their pedigree chart."),
+                                   ContentWidth, card);
     hint->setObjectName(QStringLiteral("bodyText"));
-    hint->setWordWrap(true);
 
     auto *signOutButton = new QPushButton(tr("Sign Out"), card);
     signOutButton->setObjectName(QStringLiteral("secondaryButton"));
     signOutButton->setCursor(Qt::PointingHandCursor);
 
     auto *cardLayout = new QVBoxLayout(card);
-    cardLayout->setContentsMargins(40, 36, 40, 32);
+    cardLayout->setContentsMargins(CardMargin, 36, CardMargin, 32);
     cardLayout->setSpacing(0);
     cardLayout->addWidget(title);
     cardLayout->addSpacing(8);

@@ -9,6 +9,51 @@
 #include <QVBoxLayout>
 #include <QWidget>
 
+WrappingLabel::WrappingLabel(const QString &text, int width, QWidget *parent) :
+    QLabel(text, parent),
+    contentWidth(width)
+{
+    setWordWrap(true);
+}
+
+QSize WrappingLabel::minimumSizeHint() const
+{
+    QSize hint = QLabel::minimumSizeHint();
+    const int width = contentWidth > 0 ? contentWidth : QLabel::width();
+    if (width > 0) {
+        hint.setHeight(qMax(hint.height(), heightForWidth(width)));
+    }
+    return hint;
+}
+
+void WrappingLabel::showEvent(QShowEvent *event)
+{
+    QLabel::showEvent(event);
+    updateWrapHeight();
+}
+
+void WrappingLabel::resizeEvent(QResizeEvent *event)
+{
+    QLabel::resizeEvent(event);
+    updateWrapHeight();
+}
+
+void WrappingLabel::updateWrapHeight()
+{
+    // A corrected minimumSizeHint() alone is not enough: a QBoxLayout that has
+    // already sized this widget will not revisit it. Setting the minimum
+    // height outright forces the relayout.
+    const int width = contentWidth > 0 ? contentWidth : QLabel::width();
+    if (width <= 0) {
+        return;
+    }
+
+    const int needed = heightForWidth(width);
+    if (needed > 0 && minimumHeight() != needed) {
+        setMinimumHeight(needed);
+    }
+}
+
 namespace UiTheme {
 
 QString styleSheet()
