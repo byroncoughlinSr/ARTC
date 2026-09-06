@@ -7,6 +7,7 @@
 #include "familytree.h"
 #include "pedigree.h"
 #include "pedigreeview.h"
+#include "persondialog.h"
 #include "registerwidget.h"
 #include "signinwidget.h"
 #include "uitheme.h"
@@ -139,6 +140,8 @@ void MainWindow::connectScreens()
             this, &MainWindow::handleRegistration);
     connect(registerScreen, &RegisterWidget::signInRequested, this, &MainWindow::showSignIn);
     connect(registerScreen, &RegisterWidget::backRequested, this, &MainWindow::showHome);
+
+    connect(pedigreeScreen, &PedigreeView::slotActivated, this, &MainWindow::editSlot);
 
     connect(pedigreeScreen, &PedigreeView::backRequested, this, [this] {
         setWorkspaceChromeVisible(true);
@@ -295,6 +298,63 @@ void MainWindow::handleRegistration(const RegistrationDetails &details)
     statusBar()->showMessage(tr("Account created for %1").arg(email));
 }
 
+/**
+ * @brief MainWindow::editSlot
+ * @param slotId
+ */
+void MainWindow::editSlot(int slotId)
+{
+    FamilyTree tree;
+    QString error;
+    if (!tree.load(FamilyTree::currentHostId(), &error)) {
+        QMessageBox::critical(this, tr("Family tree"), error);
+        return;
+    }
+
+    const TreeNode *slot = nullptr;
+    for (TreeNode *node : tree.nodes()) {
+        if (node->id == slotId) {
+            slot = node;
+            break;
+        }
+    }
+    if (!slot) {
+        return;
+    }
+
+    // The host is the root of the chart, not a slot to be emptied.
+    if (slot->generation == 0) {
+        QMessageBox::information(this, tr("Host"),
+                                 tr("%1 is the host — the person the whole chart is "
+                                    "built around, so this slot cannot be emptied.")
+                                     .arg(slot->displayName()));
+        return;
+    }
+
+    const QString hostName = tree.root() ? tree.root()->displayName() : QString();
+    PersonDialog dialog(slot, slot->relationship(), hostName, this);
+    dialog.setModal(true);
+    if (dialog.exec() != QDialog::Accepted) {
+        return;
+    }
+
+    bool ok = false;
+    if (dialog.removalRequested()) {
+        ok = FamilyTree::clearPerson(slotId, &error);
+    } else {
+        const PersonDetails d = dialog.details();
+        ok = FamilyTree::savePerson(slotId, d.firstName, d.middleName, d.lastName,
+                                    d.birthdate, &error);
+    }
+
+    if (!ok) {
+        QMessageBox::critical(this, tr("Family tree"), error);
+        return;
+    }
+
+    pedigreeScreen->reload();
+}
+
 void MainWindow::on_action_New_Host_triggered()
 {
     QString error;
@@ -328,23 +388,11 @@ void MainWindow::on_action_New_Host_triggered()
 
     databaseHelper.setHost(person.id);
 
-    // The two parents of the root, as placeholders.
-    Person::Individual father;
-    father.firstName = "FATHER";
-    father.lastName = QString::number(person.id);
-    father.sex = 'M';
-    father.birthdate.setDate(1, 1, 1);
-    databaseHelper.addPerson(father);
-
-    Person::Individual mother;
-    mother.firstName = "MOTHER";
-    mother.lastName = QString::number(person.id);
-    mother.sex = 'F';
-    mother.birthdate.setDate(1, 1, 1);
-    databaseHelper.addPerson(mother);
-
-    const int fatherId = databaseHelper.getFatherId("FATHER", QString::number(person.id));
-    const int motherId = databaseHelper.getMotherId("MOTHER", QString::number(person.id));
+    // The root's own two parents, as empty slots.
+    const int fatherId = databaseHelper.addSlot(
+        QStringLiteral("FATHER-%1").arg(person.id), 'M');
+    const int motherId = databaseHelper.addSlot(
+        QStringLiteral("MOTHER-%1").arg(person.id), 'F');
     databaseHelper.addParents(person.id, fatherId, motherId);
     person.fatherId = fatherId;
     person.motherId = motherId;

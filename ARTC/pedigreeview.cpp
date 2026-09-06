@@ -13,6 +13,8 @@
 #include <QPainterPath>
 #include <QPen>
 #include <QPushButton>
+#include <QGraphicsSceneMouseEvent>
+#include <QMouseEvent>
 #include <QSpinBox>
 #include <QVBoxLayout>
 
@@ -154,6 +156,8 @@ PedigreeView::PedigreeView(QWidget *parent) :
     connect(fitButton, &QPushButton::clicked, this, &PedigreeView::fitToView);
     connect(inButton, &QPushButton::clicked, this, &PedigreeView::zoomIn);
     connect(outButton, &QPushButton::clicked, this, &PedigreeView::zoomOut);
+    view->viewport()->installEventFilter(this);
+
     connect(generationSpin, &QSpinBox::valueChanged, this, [this] {
         if (tree->root()) {
             draw();
@@ -161,6 +165,22 @@ PedigreeView::PedigreeView(QWidget *parent) :
             showHostArea();
         }
     });
+}
+
+void PedigreeView::reload()
+{
+    if (tree->root()) {
+        const int hostId = tree->root()->id;
+        const bool keepView = viewPositioned;
+        const QPointF centre = view->mapToScene(view->viewport()->rect().center());
+        if (tree->load(hostId)) {
+            draw();
+            if (keepView) {
+                view->centerOn(centre);
+                viewPositioned = true;
+            }
+        }
+    }
 }
 
 bool PedigreeView::showHost(int hostId, QString *error)
@@ -276,6 +296,11 @@ void PedigreeView::drawNode(TreeNode *node, qreal x, qreal y)
     path.addRoundedRect(card, CornerRadius, CornerRadius);
     QGraphicsPathItem *body = scene->addPath(path, edge,
                                              placeholder ? QBrush(CardFill) : QBrush(tint));
+    // The whole card is the click target; the id rides along on the item so the
+    // scene handler does not need to hit-test against the tree again.
+    body->setData(0, node->id);
+    body->setCursor(Qt::PointingHandCursor);
+    body->setAcceptedMouseButtons(Qt::LeftButton);
 
     // The accent stripe down the left edge carries the sex at a distance.
     QPainterPath stripe;
@@ -339,6 +364,26 @@ void PedigreeView::drawNode(TreeNode *node, qreal x, qreal y)
                          : QObject::tr("%1 — %2 (generation %3)")
                                .arg(node->displayName(), relationship(node))
                                .arg(node->generation));
+}
+
+bool PedigreeView::eventFilter(QObject *watched, QEvent *event)
+{
+    // ScrollHandDrag swallows presses for panning, so the release is what
+    // identifies a click — and only when the view has not been dragged.
+    if (watched == view->viewport() && event->type() == QEvent::MouseButtonRelease) {
+        auto *mouse = static_cast<QMouseEvent *>(event);
+        if (mouse->button() == Qt::LeftButton) {
+            const QPointF scenePos = view->mapToScene(mouse->pos());
+            for (QGraphicsItem *item : scene->items(scenePos)) {
+                const QVariant id = item->data(0);
+                if (id.isValid() && id.toInt() > 0) {
+                    emit slotActivated(id.toInt());
+                    break;
+                }
+            }
+        }
+    }
+    return QWidget::eventFilter(watched, event);
 }
 
 void PedigreeView::showEvent(QShowEvent *event)

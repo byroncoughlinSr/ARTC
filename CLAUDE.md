@@ -57,7 +57,7 @@ database.**
 
 | Table        | Notes |
 | ------------ | ----- |
-| `tblPerson`  | Every individual. Self-referencing adjacency list via `fatherId`/`motherId`. `gender` and `birthdate` are written but never read back. |
+| `tblPerson`  | Every **slot** in a pedigree, occupied or not. Self-referencing adjacency list via `fatherId`/`motherId`. `slotCode` is the position ("MGF201-7") and lives for the row's lifetime; the name columns hold whoever fills it, and are NULL when the slot is empty. |
 | `tblAccount` | Sign-in accounts. `personId` is null until the holder creates a host. |
 | `tblChild`   | The inverse parent→child edge, written by `addChild()` and **never read**. Duplicates `tblPerson.fatherId`/`motherId`, and does not record which parent it was. |
 | `tblHost`    | Written by `setHost()`, which is **dead code** — nothing calls it. |
@@ -95,6 +95,12 @@ SignInWidget ── signInRequested ─────►│
                                       ▼
                        FamilyTree::load → PedigreeView (the chart)
 ```
+
+**A slot is not a person.** `tblPerson` rows are positions in the chart, created empty by the
+generator. Filling one is an UPDATE of the name columns; emptying one nulls them. **Never
+DELETE a row to remove a person** — the row carries the `fatherId`/`motherId` links that the
+entire branch of ancestors above it hangs from. `PersonDialog` + `FamilyTree::savePerson` /
+`clearPerson` are the supported path.
 
 **The pedigree chart.** `FamilyTree` walks `tblPerson` breadth-first from the host and
 `PedigreeView` draws it on a `QGraphicsScene`: square for male, circle for female, per the

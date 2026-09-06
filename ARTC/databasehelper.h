@@ -12,6 +12,19 @@ public:
     bool createConnection();
     QString lastError() const;
     bool addPerson(struct Person::Individual p);
+
+    /**
+     * @brief Insert an empty slot and return its id.
+     *
+     * Replaces the addPerson-then-look-the-name-up-again round trip: the id
+     * comes straight back from the insert, so two slots can never be confused
+     * for sharing a generated name.
+     *
+     * @param slotCode the position code, e.g. "MGF201-7"
+     * @param sex 'M' or 'F'
+     * @return the new tblPerson.ID, or 0 if the insert failed
+     */
+    int addSlot(const QString &slotCode, QChar sex);
     int getPersonId(struct Person::Individual);
     Person::Individual *getPerson(int id);
     bool setHost(int id);

@@ -75,32 +75,20 @@ void Pedigree::createSide(QChar s, int id, DatabaseHelper dbHelper)
            //Get id from head
            defautltDate.setDate(0001, 1, 1);
 
-           //Create the father
+           // Create the father and mother of this node as empty slots. The
+           // insert hands back each id, so there is no name lookup to get
+           // wrong.
            grandparent = "GF";
            fatherName =  s + grandparent + QString::number(generation, 10) + QString::number(sequence, 10) + "-" + QString::number(rootId, 10);
-           father.firstName = fatherName;
-           father.lastName = QString::number(rootId, 10);
-           father.birthdate = defautltDate;
-           father.deathdate = defautltDate;
-           father.sex = 'M';
-           dbHelper.addPerson(father);
+           fatherId = dbHelper.addSlot(fatherName, 'M');
 
-           //Create the mother
            grandparent = "GM";
            motherName =  s + grandparent + QString::number(generation, 10) + QString::number(sequence, 10) + "-" + QString::number(rootId, 10);
-           mother.firstName = motherName;
-           mother.lastName = QString::number(rootId, 10);
-           mother.birthdate = defautltDate;
-           mother.deathdate = defautltDate;
-           mother.sex = 'F';
-           dbHelper.addPerson(mother);
+           motherId = dbHelper.addSlot(motherName, 'F');
 
-          //add parents to child
-          fatherId = dbHelper.getFatherId(father.firstName, father.lastName);
-          motherId =  dbHelper.getMotherId(mother.firstName, mother.lastName);
-          dbHelper.addParents(temp->id, fatherId, motherId);
-          dbHelper.addChild(temp->id, 'F', fatherId);
-          dbHelper.addChild(temp->id, 'M', motherId);
+           dbHelper.addParents(temp->id, fatherId, motherId);
+           dbHelper.addChild(temp->id, 'F', fatherId);
+           dbHelper.addChild(temp->id, 'M', motherId);
 
           //Create new nodes on linked list
           add_node(fatherId);

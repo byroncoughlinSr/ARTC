@@ -32,6 +32,7 @@ TreeNode *nodeFromQuery(const QSqlQuery &query)
     const QString sex = query.value(4).toString();
     node->sex = sex.isEmpty() ? QChar() : sex.at(0);
     node->birthdate = query.value(5).toDate();
+    node->slotCode = query.value(8).toString();
     return node;
 }
 
@@ -39,7 +40,10 @@ TreeNode *nodeFromQuery(const QSqlQuery &query)
 
 bool TreeNode::isPlaceholder() const
 {
-    return firstName == QLatin1String("FATHER") || firstName == QLatin1String("MOTHER")
+    // An empty slot simply has no name. The pattern test is only for rows
+    // written before slotCode existed, which kept the code in firstName.
+    return firstName.trimmed().isEmpty()
+           || firstName == QLatin1String("FATHER") || firstName == QLatin1String("MOTHER")
            || slotNamePattern().match(firstName).hasMatch();
 }
 
@@ -71,8 +75,8 @@ bool FamilyTree::load(int hostId, QString *error)
 
     QSqlQuery query;
     query.prepare(QStringLiteral(
-        "SELECT ID, firstName, middleName, lastName, gender, birthdate, fatherId, motherId "
-        "FROM tblPerson WHERE ID = :id"));
+        "SELECT ID, firstName, middleName, lastName, gender, birthdate, fatherId, "
+        "motherId, slotCode FROM tblPerson WHERE ID = :id"));
 
     // Breadth-first from the host, so generation numbers fall out of the walk
     // and a cycle in the parent links cannot loop forever.
@@ -156,6 +160,73 @@ int FamilyTree::placeholderCount() const
     return count;
 }
 
+QString TreeNode::relationship() const
+{
+    const bool male = sex != QLatin1Char('F');
+    switch (generation) {
+    case 0: return QObject::tr("Host");
+    case 1: return male ? QObject::tr("Father") : QObject::tr("Mother");
+    case 2: return male ? QObject::tr("Grandfather") : QObject::tr("Grandmother");
+    case 3: return male ? QObject::tr("Great-grandfather")
+                        : QObject::tr("Great-grandmother");
+    default: {
+        const int greats = generation - 2;
+        const QString suffix = (greats % 100 >= 11 && greats % 100 <= 13) ? QStringLiteral("th")
+                             : greats % 10 == 1 ? QStringLiteral("st")
+                             : greats % 10 == 2 ? QStringLiteral("nd")
+                             : greats % 10 == 3 ? QStringLiteral("rd")
+                                                : QStringLiteral("th");
+        const QString ord = QStringLiteral("%1%2").arg(greats).arg(suffix);
+        return male ? QObject::tr("%1 great-grandfather").arg(ord)
+                    : QObject::tr("%1 great-grandmother").arg(ord);
+    }
+    }
+}
+
+bool FamilyTree::savePerson(int slotId, const QString &firstName, const QString &middleName,
+                            const QString &lastName, const QDate &birthdate, QString *error)
+{
+    QSqlQuery query;
+    query.prepare(QStringLiteral(
+        "UPDATE tblPerson SET firstName = :first, middleName = :middle, "
+        "lastName = :last, birthdate = :born WHERE ID = :id"));
+    query.bindValue(QStringLiteral(":first"), firstName);
+    query.bindValue(QStringLiteral(":middle"), middleName.isEmpty() ? QVariant() : middleName);
+    query.bindValue(QStringLiteral(":last"), lastName);
+    query.bindValue(QStringLiteral(":born"), birthdate.isValid() ? QVariant(birthdate)
+                                                                 : QVariant());
+    query.bindValue(QStringLiteral(":id"), slotId);
+
+    if (!query.exec()) {
+        if (error) {
+            *error = QObject::tr("Could not save the person.\n\n%1")
+                         .arg(query.lastError().text());
+        }
+        return false;
+    }
+    return true;
+}
+
+bool FamilyTree::clearPerson(int slotId, QString *error)
+{
+    // The row stays: it is the slot, and every ancestor above it is reached
+    // through its fatherId and motherId. Only the person is cleared.
+    QSqlQuery query;
+    query.prepare(QStringLiteral(
+        "UPDATE tblPerson SET firstName = NULL, middleName = NULL, lastName = NULL, "
+        "birthdate = NULL WHERE ID = :id"));
+    query.bindValue(QStringLiteral(":id"), slotId);
+
+    if (!query.exec()) {
+        if (error) {
+            *error = QObject::tr("Could not empty the slot.\n\n%1")
+                         .arg(query.lastError().text());
+        }
+        return false;
+    }
+    return true;
+}
+
 int FamilyTree::currentHostId()
 {
     QSqlQuery query;
@@ -168,8 +239,7 @@ int FamilyTree::currentHostId()
     // whose name is not one of the generator's placeholders.
     if (query.exec(QStringLiteral(
             "SELECT ID FROM tblPerson "
-            "WHERE firstName NOT IN ('FATHER','MOTHER') "
-            "AND firstName NOT REGEXP '^[FM]G[FM][0-9]+-[0-9]+$' "
+            "WHERE firstName IS NOT NULL AND firstName <> '' "
             "ORDER BY ID DESC LIMIT 1"))
         && query.next()) {
         return query.value(0).toInt();

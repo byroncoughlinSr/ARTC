@@ -35,11 +35,18 @@ public:
      */
     bool showHost(int hostId, QString *error = nullptr);
 
+    /** @brief Redraw from the database, keeping the current view settings. */
+    void reload();
+
 signals:
     /** @brief The user asked to go back to the workspace. */
     void backRequested();
 
+    /** @brief The user clicked the card for the slot with this id. */
+    void slotActivated(int slotId);
+
 protected:
+    bool eventFilter(QObject *watched, QEvent *event) override;
     void showEvent(QShowEvent *event) override;
     void resizeEvent(QResizeEvent *event) override;
 

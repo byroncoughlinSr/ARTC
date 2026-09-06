@@ -164,6 +164,29 @@ bool DatabaseHelper::addPerson(struct Person::Individual p)
 
 
 /**
+ * @brief DatabaseHelper::addSlot
+ * @param slotCode
+ * @param sex
+ * @return
+ */
+int DatabaseHelper::addSlot(const QString &slotCode, QChar sex)
+{
+    QSqlQuery query;
+    query.prepare(QStringLiteral(
+        "INSERT INTO tblPerson (slotCode, gender) VALUES (:slot, :sex)"));
+    query.bindValue(QStringLiteral(":slot"), slotCode);
+    query.bindValue(QStringLiteral(":sex"), QString(sex));
+
+    if (!query.exec()) {
+        QMessageBox::critical(nullptr, QObject::tr("Query Error"),
+                              query.lastError().text());
+        return 0;
+    }
+
+    return query.lastInsertId().toInt();
+}
+
+/**
  * @brief DatabaseHelper::getPersonId
  * @param p
  * @return

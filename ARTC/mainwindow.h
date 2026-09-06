@@ -49,6 +49,9 @@ private slots:
     void showHome();
     /** @brief Open the family tree for the current host. */
     void showFamilyTree();
+
+    /** @brief Open the add/edit/remove dialog for one slot in the chart. */
+    void editSlot(int slotId);
     void showSignIn();
     void showRegister();
     void signOut();

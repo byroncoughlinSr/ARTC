@@ -17,6 +17,7 @@
 struct TreeNode
 {
     int id = 0;
+    QString slotCode;
     QString firstName;
     QString middleName;
     QString lastName;
@@ -32,6 +33,9 @@ struct TreeNode
 
     /** @brief "Given Middle Family", or an empty string for a placeholder. */
     QString displayName() const;
+
+    /** @brief Name this slot by its position, e.g. "Great-grandmother". */
+    QString relationship() const;
 };
 
 /**
@@ -75,6 +79,20 @@ public:
      * pedigree built before setHost() was wired up can still be opened.
      */
     static int currentHostId();
+
+    /**
+     * @brief Write a person into the slot with id @p slotId.
+     * @param[out] error message suitable for showing to the user
+     */
+    static bool savePerson(int slotId, const QString &firstName, const QString &middleName,
+                           const QString &lastName, const QDate &birthdate,
+                           QString *error = nullptr);
+
+    /**
+     * @brief Empty the slot with id @p slotId, keeping the slot and its branch.
+     * @param[out] error message suitable for showing to the user
+     */
+    static bool clearPerson(int slotId, QString *error = nullptr);
 
 private:
     TreeNode *rootNode = nullptr;

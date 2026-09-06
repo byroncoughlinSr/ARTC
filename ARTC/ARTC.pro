@@ -37,7 +37,8 @@ SOURCES += \
     passwordhasher.cpp \
     accountrepository.cpp \
     familytree.cpp \
-    pedigreeview.cpp
+    pedigreeview.cpp \
+    persondialog.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -52,7 +53,8 @@ HEADERS += \
     passwordhasher.h \
     accountrepository.h \
     familytree.h \
-    pedigreeview.h
+    pedigreeview.h \
+    persondialog.h
 
 FORMS += \
         mainwindow.ui
