@@ -19,6 +19,9 @@ constexpr int ContentWidth = 500;
 /** Bounds the date editor, matching the registration screen. */
 constexpr int EarliestBirthYear = 1900;
 
+/** Shown in the field caption too, so the expected form is never a guess. */
+const QString DateFormat = QStringLiteral("yyyy-MM-dd");
+
 } // namespace
 
 Hostdlg::Hostdlg(QWidget *parent) :
@@ -46,7 +49,7 @@ Hostdlg::Hostdlg(QWidget *parent) :
     lastNameEdit->setPlaceholderText(tr("Family name"));
 
     birthdateEdit = new QDateEdit(this);
-    birthdateEdit->setDisplayFormat(QStringLiteral("yyyy-MM-dd"));
+    birthdateEdit->setDisplayFormat(DateFormat);
     birthdateEdit->setCalendarPopup(true);
     birthdateEdit->setDateRange(QDate(EarliestBirthYear, 1, 1), QDate::currentDate());
     birthdateEdit->setDate(QDate(1956, 1, 1));
@@ -69,7 +72,8 @@ Hostdlg::Hostdlg(QWidget *parent) :
     form->addWidget(UiTheme::createField(tr("First name"), firstNameEdit, this), 0, 0);
     form->addWidget(UiTheme::createField(tr("Middle name"), middleNameEdit, this), 0, 1);
     form->addWidget(UiTheme::createField(tr("Last name"), lastNameEdit, this), 1, 0);
-    form->addWidget(UiTheme::createField(tr("Birth date"), birthdateEdit, this), 1, 1);
+    form->addWidget(UiTheme::createField(tr("Birth date (%1)").arg(DateFormat.toLower()),
+                                        birthdateEdit, this), 1, 1);
     form->addWidget(UiTheme::createField(tr("Sex"), sexGroup, this), 2, 0, 1, 2);
     form->setColumnStretch(0, 1);
     form->setColumnStretch(1, 1);

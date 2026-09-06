@@ -23,6 +23,9 @@ constexpr int MinimumPasswordLength = 8;
 /** Earliest birth year offered, which also bounds the date editor. */
 constexpr int EarliestBirthYear = 1900;
 
+/** Shown in the field caption too, so the expected form is never a guess. */
+const QString DateFormat = QStringLiteral("yyyy-MM-dd");
+
 /**
  * @brief Deliberately permissive email check.
  *
@@ -67,7 +70,7 @@ RegisterWidget::RegisterWidget(QWidget *parent) :
     lastNameEdit->setPlaceholderText(tr("Family name"));
 
     birthdateEdit = new QDateEdit(card);
-    birthdateEdit->setDisplayFormat(QStringLiteral("yyyy-MM-dd"));
+    birthdateEdit->setDisplayFormat(DateFormat);
     birthdateEdit->setCalendarPopup(true);
     birthdateEdit->setDateRange(QDate(EarliestBirthYear, 1, 1), QDate::currentDate());
     birthdateEdit->setDate(QDate(1990, 1, 1));
@@ -89,7 +92,8 @@ RegisterWidget::RegisterWidget(QWidget *parent) :
     form->addWidget(UiTheme::createField(tr("First name"), firstNameEdit, card), 0, 0);
     form->addWidget(UiTheme::createField(tr("Middle name"), middleNameEdit, card), 0, 1);
     form->addWidget(UiTheme::createField(tr("Last name"), lastNameEdit, card), 1, 0);
-    form->addWidget(UiTheme::createField(tr("Date of birth"), birthdateEdit, card), 1, 1);
+    form->addWidget(UiTheme::createField(tr("Date of birth (%1)").arg(DateFormat.toLower()),
+                                        birthdateEdit, card), 1, 1);
     form->addWidget(UiTheme::createField(tr("Email"), emailEdit, card), 2, 0, 1, 2);
     form->addWidget(UiTheme::createField(tr("Password"), passwordEdit, card), 3, 0);
     form->addWidget(UiTheme::createField(tr("Confirm password"), confirmEdit, card), 3, 1);
