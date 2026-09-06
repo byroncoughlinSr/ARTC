@@ -122,10 +122,11 @@ QDateEdit[invalid="true"] {
     border-color: #C0392B;
 }
 
-QDateEdit::drop-down {
-    border: none;
-    width: 22px;
-}
+/*
+ * QDateEdit's calendar button is deliberately left unstyled. Overriding
+ * ::drop-down without supplying an arrow image erases the arrow altogether,
+ * which leaves the date picker invisible and unreachable.
+ */
 
 /* ---- Buttons ---- */
 

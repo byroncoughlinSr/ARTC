@@ -74,6 +74,8 @@ PersonDialog::PersonDialog(const TreeNode *node, const QString &relationship,
     birthdateEdit->setDateRange(QDate(EarliestYear, 1, 1), QDate::currentDate());
     birthdateEdit->setDate(DefaultDate);
     birthUnknown = new QCheckBox(tr("Unknown"), this);
+    birthUnknown->setToolTip(tr("Leave ticked if the birth date is not known. "
+                                "Typing a date clears it."));
 
     deathdateEdit = new QDateEdit(this);
     deathdateEdit->setDisplayFormat(DateFormat);
@@ -81,6 +83,8 @@ PersonDialog::PersonDialog(const TreeNode *node, const QString &relationship,
     deathdateEdit->setDateRange(QDate(EarliestYear, 1, 1), QDate::currentDate());
     deathdateEdit->setDate(DefaultDate);
     deathUnknown = new QCheckBox(tr("Unknown or still living"), this);
+    deathUnknown->setToolTip(tr("Leave ticked if there is no death date. "
+                                "Typing a date clears it."));
 
     if (occupied) {
         firstNameEdit->setText(node->firstName);
@@ -100,11 +104,18 @@ PersonDialog::PersonDialog(const TreeNode *node, const QString &relationship,
     }
     birthUnknown->setChecked(!haveBirth);
     deathUnknown->setChecked(!haveDeath);
-    birthdateEdit->setEnabled(haveBirth);
-    deathdateEdit->setEnabled(haveDeath);
 
-    connect(birthUnknown, &QCheckBox::toggled, birthdateEdit, &QDateEdit::setDisabled);
-    connect(deathUnknown, &QCheckBox::toggled, deathdateEdit, &QDateEdit::setDisabled);
+    // The editors stay enabled whether or not the date is known. Disabling them
+    // while "Unknown" was ticked — the default for an empty slot — meant
+    // clicking the date field did nothing at all until the checkbox was found
+    // and cleared, which read as the field being broken. Typing a date is the
+    // primary action, so it works immediately and clears "Unknown" itself.
+    connect(birthdateEdit, &QDateEdit::dateChanged, this, [this] {
+        birthUnknown->setChecked(false);
+    });
+    connect(deathdateEdit, &QDateEdit::dateChanged, this, [this] {
+        deathUnknown->setChecked(false);
+    });
 
     auto *form = new QGridLayout;
     form->setHorizontalSpacing(16);
