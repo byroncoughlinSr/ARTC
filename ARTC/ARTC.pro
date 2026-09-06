@@ -30,7 +30,6 @@ SOURCES += \
     databasehelper.cpp \
     person.cpp \
     pedigree.cpp \
-    login.cpp \
     uitheme.cpp \
     homewidget.cpp \
     signinwidget.cpp \
@@ -42,7 +41,6 @@ HEADERS += \
     databasehelper.h \
     person.h \
     pedigree.h \
-    login.h \
     uitheme.h \
     homewidget.h \
     signinwidget.h \
@@ -50,8 +48,7 @@ HEADERS += \
 
 FORMS += \
         mainwindow.ui \
-    hostdlg.ui \
-    login.ui
+    hostdlg.ui
 
 RESOURCES += \
     resources.qrc
