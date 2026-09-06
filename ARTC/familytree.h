@@ -23,6 +23,7 @@ struct TreeNode
     QString lastName;
     QChar sex;
     QDate birthdate;
+    QDate deathdate;
     int generation = 0;
 
     TreeNode *father = nullptr;
@@ -33,6 +34,9 @@ struct TreeNode
 
     /** @brief "Given Middle Family", or an empty string for a placeholder. */
     QString displayName() const;
+
+    /** @brief "b. 1930 - d. 1998", or an empty string when neither is known. */
+    QString lifespan() const;
 
     /** @brief Name this slot by its position, e.g. "Great-grandmother". */
     QString relationship() const;
@@ -86,7 +90,7 @@ public:
      */
     static bool savePerson(int slotId, const QString &firstName, const QString &middleName,
                            const QString &lastName, const QDate &birthdate,
-                           QString *error = nullptr);
+                           const QDate &deathdate, QString *error = nullptr);
 
     /**
      * @brief Empty the slot with id @p slotId, keeping the slot and its branch.

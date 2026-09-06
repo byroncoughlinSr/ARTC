@@ -344,7 +344,7 @@ void MainWindow::editSlot(int slotId)
     } else {
         const PersonDetails d = dialog.details();
         ok = FamilyTree::savePerson(slotId, d.firstName, d.middleName, d.lastName,
-                                    d.birthdate, &error);
+                                    d.birthdate, d.deathdate, &error);
     }
 
     if (!ok) {

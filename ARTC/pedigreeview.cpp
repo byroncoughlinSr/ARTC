@@ -344,8 +344,8 @@ void PedigreeView::drawNode(TreeNode *node, qreal x, qreal y)
     QString secondary;
     if (placeholder) {
         secondary = QObject::tr("No match yet");
-    } else if (node->birthdate.isValid() && node->birthdate.year() > 1) {
-        secondary = QObject::tr("b. %1").arg(node->birthdate.toString(QStringLiteral("yyyy")));
+    } else {
+        secondary = node->lifespan();
     }
     if (!secondary.isEmpty()) {
         auto *sub = scene->addSimpleText(secondary);

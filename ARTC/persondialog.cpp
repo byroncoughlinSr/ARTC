@@ -2,6 +2,7 @@
 #include "familytree.h"
 #include "uitheme.h"
 
+#include <QCheckBox>
 #include <QDateEdit>
 #include <QDialogButtonBox>
 #include <QGridLayout>
@@ -14,8 +15,23 @@
 namespace {
 
 constexpr int ContentWidth = 470;
-constexpr int EarliestBirthYear = 1500;
+constexpr int EarliestYear = 1500;
+
+/** Where a date editor starts when the user first enables it. */
+const QDate DefaultDate(1900, 1, 1);
 const QString DateFormat = QStringLiteral("yyyy-MM-dd");
+
+/** Stack an "Unknown" checkbox under a date editor. */
+QWidget *dateField(QDateEdit *edit, QCheckBox *unknown, QWidget *parent)
+{
+    auto *group = new QWidget(parent);
+    auto *layout = new QVBoxLayout(group);
+    layout->setContentsMargins(0, 0, 0, 0);
+    layout->setSpacing(5);
+    layout->addWidget(edit);
+    layout->addWidget(unknown);
+    return group;
+}
 
 } // namespace
 
@@ -49,23 +65,46 @@ PersonDialog::PersonDialog(const TreeNode *node, const QString &relationship,
     lastNameEdit = new QLineEdit(this);
     lastNameEdit->setPlaceholderText(tr("Family name"));
 
+    // A QDateEdit whose special value text is showing hides its sections, so
+    // there is nothing to click into and type — which made an unknown date
+    // impossible to fill in. An explicit checkbox keeps the editor usable.
     birthdateEdit = new QDateEdit(this);
     birthdateEdit->setDisplayFormat(DateFormat);
     birthdateEdit->setCalendarPopup(true);
-    birthdateEdit->setSpecialValueText(tr("Unknown"));
-    // The minimum doubles as "unknown", which is the common case for an
-    // ancestor several generations back.
-    birthdateEdit->setDateRange(QDate(EarliestBirthYear, 1, 1), QDate::currentDate());
-    birthdateEdit->setDate(QDate(EarliestBirthYear, 1, 1));
+    birthdateEdit->setDateRange(QDate(EarliestYear, 1, 1), QDate::currentDate());
+    birthdateEdit->setDate(DefaultDate);
+    birthUnknown = new QCheckBox(tr("Unknown"), this);
+
+    deathdateEdit = new QDateEdit(this);
+    deathdateEdit->setDisplayFormat(DateFormat);
+    deathdateEdit->setCalendarPopup(true);
+    deathdateEdit->setDateRange(QDate(EarliestYear, 1, 1), QDate::currentDate());
+    deathdateEdit->setDate(DefaultDate);
+    deathUnknown = new QCheckBox(tr("Unknown or still living"), this);
 
     if (occupied) {
         firstNameEdit->setText(node->firstName);
         middleNameEdit->setText(node->middleName);
         lastNameEdit->setText(node->lastName);
-        if (node->birthdate.isValid() && node->birthdate.year() >= EarliestBirthYear) {
-            birthdateEdit->setDate(node->birthdate);
-        }
     }
+
+    const bool haveBirth = occupied && node->birthdate.isValid()
+                           && node->birthdate.year() >= EarliestYear;
+    const bool haveDeath = occupied && node->deathdate.isValid()
+                           && node->deathdate.year() >= EarliestYear;
+    if (haveBirth) {
+        birthdateEdit->setDate(node->birthdate);
+    }
+    if (haveDeath) {
+        deathdateEdit->setDate(node->deathdate);
+    }
+    birthUnknown->setChecked(!haveBirth);
+    deathUnknown->setChecked(!haveDeath);
+    birthdateEdit->setEnabled(haveBirth);
+    deathdateEdit->setEnabled(haveDeath);
+
+    connect(birthUnknown, &QCheckBox::toggled, birthdateEdit, &QDateEdit::setDisabled);
+    connect(deathUnknown, &QCheckBox::toggled, deathdateEdit, &QDateEdit::setDisabled);
 
     auto *form = new QGridLayout;
     form->setHorizontalSpacing(16);
@@ -74,7 +113,9 @@ PersonDialog::PersonDialog(const TreeNode *node, const QString &relationship,
     form->addWidget(UiTheme::createField(tr("Middle name"), middleNameEdit, this), 0, 1);
     form->addWidget(UiTheme::createField(tr("Last name"), lastNameEdit, this), 1, 0);
     form->addWidget(UiTheme::createField(tr("Birth date (%1)").arg(DateFormat.toLower()),
-                                         birthdateEdit, this), 1, 1);
+                                         dateField(birthdateEdit, birthUnknown, this)), 1, 1);
+    form->addWidget(UiTheme::createField(tr("Death date (%1)").arg(DateFormat.toLower()),
+                                         dateField(deathdateEdit, deathUnknown, this)), 2, 1);
     form->setColumnStretch(0, 1);
     form->setColumnStretch(1, 1);
 
@@ -137,12 +178,21 @@ void PersonDialog::save()
         return;
     }
 
+    const QDate born = birthUnknown->isChecked() ? QDate() : birthdateEdit->date();
+    const QDate died = deathUnknown->isChecked() ? QDate() : deathdateEdit->date();
+
+    if (born.isValid() && died.isValid() && died < born) {
+        errorLabel->setText(tr("The death date is before the birth date."));
+        errorLabel->show();
+        deathdateEdit->setFocus();
+        return;
+    }
+
     entered.firstName = firstName;
     entered.middleName = middleNameEdit->text().trimmed();
     entered.lastName = lastName;
-    // The minimum date is the "unknown" sentinel, so store nothing for it.
-    entered.birthdate = birthdateEdit->date().year() <= EarliestBirthYear
-                            ? QDate() : birthdateEdit->date();
+    entered.birthdate = born;
+    entered.deathdate = died;
     removing = false;
     accept();
 }

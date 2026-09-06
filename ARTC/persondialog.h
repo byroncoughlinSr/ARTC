@@ -5,6 +5,7 @@
 #include <QDialog>
 #include <QString>
 
+class QCheckBox;
 class QDateEdit;
 class QLabel;
 class QLineEdit;
@@ -19,6 +20,7 @@ struct PersonDetails
     QString middleName;
     QString lastName;
     QDate birthdate;
+    QDate deathdate;
 };
 
 /**
@@ -57,6 +59,9 @@ private:
     QLineEdit *middleNameEdit;
     QLineEdit *lastNameEdit;
     QDateEdit *birthdateEdit;
+    QCheckBox *birthUnknown;
+    QDateEdit *deathdateEdit;
+    QCheckBox *deathUnknown;
     QLabel *errorLabel;
     PersonDetails entered;
     bool removing = false;

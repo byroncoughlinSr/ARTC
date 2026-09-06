@@ -33,6 +33,7 @@ TreeNode *nodeFromQuery(const QSqlQuery &query)
     node->sex = sex.isEmpty() ? QChar() : sex.at(0);
     node->birthdate = query.value(5).toDate();
     node->slotCode = query.value(8).toString();
+    node->deathdate = query.value(9).toDate();
     return node;
 }
 
@@ -76,7 +77,7 @@ bool FamilyTree::load(int hostId, QString *error)
     QSqlQuery query;
     query.prepare(QStringLiteral(
         "SELECT ID, firstName, middleName, lastName, gender, birthdate, fatherId, "
-        "motherId, slotCode FROM tblPerson WHERE ID = :id"));
+        "motherId, slotCode, deathdate FROM tblPerson WHERE ID = :id"));
 
     // Breadth-first from the host, so generation numbers fall out of the walk
     // and a cycle in the parent links cannot loop forever.
@@ -160,6 +161,23 @@ int FamilyTree::placeholderCount() const
     return count;
 }
 
+QString TreeNode::lifespan() const
+{
+    const bool born = birthdate.isValid();
+    const bool died = deathdate.isValid();
+
+    if (born && died) {
+        return QObject::tr("b. %1 - d. %2").arg(birthdate.year()).arg(deathdate.year());
+    }
+    if (born) {
+        return QObject::tr("b. %1").arg(birthdate.year());
+    }
+    if (died) {
+        return QObject::tr("d. %1").arg(deathdate.year());
+    }
+    return QString();
+}
+
 QString TreeNode::relationship() const
 {
     const bool male = sex != QLatin1Char('F');
@@ -184,16 +202,19 @@ QString TreeNode::relationship() const
 }
 
 bool FamilyTree::savePerson(int slotId, const QString &firstName, const QString &middleName,
-                            const QString &lastName, const QDate &birthdate, QString *error)
+                            const QString &lastName, const QDate &birthdate,
+                            const QDate &deathdate, QString *error)
 {
     QSqlQuery query;
     query.prepare(QStringLiteral(
         "UPDATE tblPerson SET firstName = :first, middleName = :middle, "
-        "lastName = :last, birthdate = :born WHERE ID = :id"));
+        "lastName = :last, birthdate = :born, deathdate = :died WHERE ID = :id"));
     query.bindValue(QStringLiteral(":first"), firstName);
     query.bindValue(QStringLiteral(":middle"), middleName.isEmpty() ? QVariant() : middleName);
     query.bindValue(QStringLiteral(":last"), lastName);
     query.bindValue(QStringLiteral(":born"), birthdate.isValid() ? QVariant(birthdate)
+                                                                 : QVariant());
+    query.bindValue(QStringLiteral(":died"), deathdate.isValid() ? QVariant(deathdate)
                                                                  : QVariant());
     query.bindValue(QStringLiteral(":id"), slotId);
 
@@ -214,7 +235,7 @@ bool FamilyTree::clearPerson(int slotId, QString *error)
     QSqlQuery query;
     query.prepare(QStringLiteral(
         "UPDATE tblPerson SET firstName = NULL, middleName = NULL, lastName = NULL, "
-        "birthdate = NULL WHERE ID = :id"));
+        "birthdate = NULL, deathdate = NULL WHERE ID = :id"));
     query.bindValue(QStringLiteral(":id"), slotId);
 
     if (!query.exec()) {
