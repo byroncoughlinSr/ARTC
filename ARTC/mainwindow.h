@@ -8,7 +8,9 @@
 #include "registerwidget.h"
 
 class HomeWidget;
+class PedigreeView;
 class QLabel;
+class QPushButton;
 class QStackedWidget;
 class RegisterWidget;
 class SignInWidget;
@@ -45,6 +47,8 @@ private slots:
     void handleRegistration(const RegistrationDetails &details);
 
     void showHome();
+    /** @brief Open the family tree for the current host. */
+    void showFamilyTree();
     void showSignIn();
     void showRegister();
     void signOut();
@@ -75,7 +79,9 @@ private:
     SignInWidget *signInScreen;
     RegisterWidget *registerScreen;
     QWidget *workspaceScreen;
+    PedigreeView *pedigreeScreen;
     QLabel *workspaceGreeting;
+    QPushButton *openTreeButton;
     Person::Individual father;
     Person::Individual mother;
 };

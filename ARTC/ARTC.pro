@@ -35,7 +35,9 @@ SOURCES += \
     signinwidget.cpp \
     registerwidget.cpp \
     passwordhasher.cpp \
-    accountrepository.cpp
+    accountrepository.cpp \
+    familytree.cpp \
+    pedigreeview.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -48,7 +50,9 @@ HEADERS += \
     signinwidget.h \
     registerwidget.h \
     passwordhasher.h \
-    accountrepository.h
+    accountrepository.h \
+    familytree.h \
+    pedigreeview.h
 
 FORMS += \
         mainwindow.ui

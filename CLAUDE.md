@@ -91,7 +91,16 @@ SignInWidget ── signInRequested ─────►│
                                       │  File → New Host
                                       ▼
                        Hostdlg → DatabaseHelper → Pedigree::createPedigree
+                                      │
+                                      ▼
+                       FamilyTree::load → PedigreeView (the chart)
 ```
+
+**The pedigree chart.** `FamilyTree` walks `tblPerson` breadth-first from the host and
+`PedigreeView` draws it on a `QGraphicsScene`: square for male, circle for female, per the
+design document. Hollow shapes are the generator's placeholder slots, filled ones are real
+people, and the host is gold. Eight generations is 128 slots in the last row alone, so the
+chart opens on five and centres on the host; the spinner and Fit button reach the rest.
 
 **Never position widgets at fixed pixel coordinates.** The application stylesheet pads
 inputs, so a hardcoded 24px-tall `QDateEdit` clips its own text. Every screen and dialog

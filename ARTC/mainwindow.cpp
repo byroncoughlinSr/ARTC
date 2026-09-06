@@ -4,13 +4,17 @@
 #include "accountrepository.h"
 #include "databasehelper.h"
 #include "homewidget.h"
+#include "familytree.h"
 #include "pedigree.h"
+#include "pedigreeview.h"
 #include "registerwidget.h"
 #include "signinwidget.h"
 #include "uitheme.h"
 
 #include <QFrame>
 #include <QLabel>
+#include <QApplication>
+#include <QHBoxLayout>
 #include <QMessageBox>
 #include <QPushButton>
 #include <QStackedWidget>
@@ -26,12 +30,14 @@ MainWindow::MainWindow(QWidget *parent) :
     signInScreen = new SignInWidget(this);
     registerScreen = new RegisterWidget(this);
     workspaceScreen = createWorkspacePage();
+    pedigreeScreen = new PedigreeView(this);
 
     screens = new QStackedWidget(this);
     screens->addWidget(homeScreen);
     screens->addWidget(signInScreen);
     screens->addWidget(registerScreen);
     screens->addWidget(workspaceScreen);
+    screens->addWidget(pedigreeScreen);
 
     auto *centralLayout = new QVBoxLayout(ui->centralWidget);
     centralLayout->setContentsMargins(0, 0, 0, 0);
@@ -92,7 +98,6 @@ QWidget *MainWindow::createWorkspacePage()
     cardLayout->addSpacing(20);
     cardLayout->addWidget(hint);
     cardLayout->addSpacing(26);
-    cardLayout->addWidget(signOutButton, 0, Qt::AlignLeft);
 
     auto *pageLayout = new QVBoxLayout(page);
     pageLayout->setContentsMargins(24, 24, 24, 24);
@@ -100,7 +105,20 @@ QWidget *MainWindow::createWorkspacePage()
     pageLayout->addWidget(card, 0, Qt::AlignHCenter);
     pageLayout->addStretch(1);
 
+    openTreeButton = new QPushButton(tr("Open Family Tree"), card);
+    openTreeButton->setObjectName(QStringLiteral("primaryButton"));
+    openTreeButton->setCursor(Qt::PointingHandCursor);
+    openTreeButton->hide();
+
+    auto *actions = new QHBoxLayout;
+    actions->setSpacing(12);
+    actions->addWidget(openTreeButton);
+    actions->addWidget(signOutButton);
+    actions->addStretch(1);
+    cardLayout->addLayout(actions);
+
     connect(signOutButton, &QPushButton::clicked, this, &MainWindow::signOut);
+    connect(openTreeButton, &QPushButton::clicked, this, &MainWindow::showFamilyTree);
 
     return page;
 }
@@ -121,6 +139,38 @@ void MainWindow::connectScreens()
             this, &MainWindow::handleRegistration);
     connect(registerScreen, &RegisterWidget::signInRequested, this, &MainWindow::showSignIn);
     connect(registerScreen, &RegisterWidget::backRequested, this, &MainWindow::showHome);
+
+    connect(pedigreeScreen, &PedigreeView::backRequested, this, [this] {
+        setWorkspaceChromeVisible(true);
+        screens->setCurrentWidget(workspaceScreen);
+    });
+}
+
+/**
+ * @brief MainWindow::showFamilyTree
+ */
+void MainWindow::showFamilyTree()
+{
+    QString error;
+    if (!ensureConnected(&error)) {
+        QMessageBox::critical(this, tr("Family tree"), error);
+        return;
+    }
+
+    const int hostId = FamilyTree::currentHostId();
+    if (hostId <= 0) {
+        QMessageBox::information(this, tr("No host yet"),
+                                 tr("Create a host first: File \u2192 New Host."));
+        return;
+    }
+
+    if (!pedigreeScreen->showHost(hostId, &error)) {
+        QMessageBox::critical(this, tr("Family tree"), error);
+        return;
+    }
+
+    setWorkspaceChromeVisible(true);
+    screens->setCurrentWidget(pedigreeScreen);
 }
 
 /**
@@ -203,6 +253,7 @@ void MainWindow::attemptSignIn(const QString &email, const QString &password)
     }
 
     workspaceGreeting->setText(tr("Signed in as %1.").arg(signedInAccount.firstName));
+    openTreeButton->setVisible(FamilyTree::currentHostId() > 0);
     setWorkspaceChromeVisible(true);
     screens->setCurrentWidget(workspaceScreen);
     statusBar()->showMessage(tr("Signed in as %1").arg(signedInAccount.email));
@@ -246,13 +297,13 @@ void MainWindow::handleRegistration(const RegistrationDetails &details)
 
 void MainWindow::on_action_New_Host_triggered()
 {
-    int fatherId;
-    int motherId;
-    Hostdlg hostdlg;
-    Pedigree pedigree;
-    Person::Individual father;
-    Person::Individual mother;
+    QString error;
+    if (!ensureConnected(&error)) {
+        QMessageBox::critical(this, tr("New host"), error);
+        return;
+    }
 
+    Hostdlg hostdlg;
     hostdlg.setModal(true);
     if (hostdlg.exec() != QDialog::Accepted) {
         // Cancelling used to fall through and write an empty person, plus the
@@ -261,30 +312,48 @@ void MainWindow::on_action_New_Host_triggered()
     }
     person = hostdlg.getHost();
 
-    //Add root person to database
-    databaseHelper.addPerson(person);
+    // Add the root person. If this fails, stop: getPersonId() would return an
+    // uninitialised id and the generator would build a whole tree under it.
+    if (!databaseHelper.addPerson(person)) {
+        return;
+    }
+
     person.id = databaseHelper.getPersonId(person);
+    if (person.id <= 0) {
+        QMessageBox::critical(this, tr("New host"),
+                              tr("The host was saved but could not be read back, so no "
+                                 "pedigree was generated."));
+        return;
+    }
 
-    //Add mother and father to database
+    databaseHelper.setHost(person.id);
 
+    // The two parents of the root, as placeholders.
+    Person::Individual father;
     father.firstName = "FATHER";
     father.lastName = QString::number(person.id);
     father.sex = 'M';
-    father.birthdate.setDate(0001, 1, 1);
+    father.birthdate.setDate(1, 1, 1);
     databaseHelper.addPerson(father);
 
-    //Add mother to database
+    Person::Individual mother;
     mother.firstName = "MOTHER";
-    motherId = person.id;
     mother.lastName = QString::number(person.id);
     mother.sex = 'F';
-    mother.birthdate.setDate(0001, 1, 1);
+    mother.birthdate.setDate(1, 1, 1);
     databaseHelper.addPerson(mother);
 
-    fatherId = databaseHelper.getFatherId("FATHER", QString::number( person.id));
-    motherId = databaseHelper.getMotherId("MOTHER", QString::number( person.id));
+    const int fatherId = databaseHelper.getFatherId("FATHER", QString::number(person.id));
+    const int motherId = databaseHelper.getMotherId("MOTHER", QString::number(person.id));
     databaseHelper.addParents(person.id, fatherId, motherId);
     person.fatherId = fatherId;
     person.motherId = motherId;
+
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+    Pedigree pedigree;
     pedigree.createPedigree(person, databaseHelper);
+    QApplication::restoreOverrideCursor();
+
+    openTreeButton->show();
+    showFamilyTree();
 }
