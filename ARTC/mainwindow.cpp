@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "hostdlg.h"
+#include "accountrepository.h"
 #include "databasehelper.h"
 #include "homewidget.h"
 #include "pedigree.h"
@@ -152,47 +153,92 @@ void MainWindow::showRegister()
 
 void MainWindow::signOut()
 {
-    databaseHelper = DatabaseHelper(QString(), QString());
+    // The connection belongs to the application, not the person signed in, so
+    // it is left open; only the session is cleared.
+    signedInAccount = Account();
     showHome();
 }
 
 /**
- * @brief MainWindow::attemptSignIn
- * @param username
- * @param password
+ * @brief MainWindow::ensureConnected
+ * @param error
+ * @return
  */
-void MainWindow::attemptSignIn(const QString &username, const QString &password)
+bool MainWindow::ensureConnected(QString *error)
 {
-    databaseHelper = DatabaseHelper(username, password);
+    if (connected) {
+        return true;
+    }
 
     if (!databaseHelper.createConnection()) {
-        signInScreen->showError(databaseHelper.lastError());
+        if (error) {
+            *error = databaseHelper.lastError();
+        }
+        return false;
+    }
+
+    connected = true;
+    return true;
+}
+
+/**
+ * @brief MainWindow::attemptSignIn
+ * @param email
+ * @param password
+ */
+void MainWindow::attemptSignIn(const QString &email, const QString &password)
+{
+    QString error;
+    if (!ensureConnected(&error)) {
+        signInScreen->showError(error);
         return;
     }
 
-    workspaceGreeting->setText(tr("Signed in as %1.").arg(username));
+    if (!AccountRepository::authenticate(email, password, &signedInAccount, &error)) {
+        signInScreen->showError(error);
+        return;
+    }
+
+    workspaceGreeting->setText(tr("Signed in as %1.").arg(signedInAccount.firstName));
     setWorkspaceChromeVisible(true);
     screens->setCurrentWidget(workspaceScreen);
-    statusBar()->showMessage(tr("Connected as %1").arg(username));
+    statusBar()->showMessage(tr("Signed in as %1").arg(signedInAccount.email));
 }
 
 /**
  * @brief MainWindow::handleRegistration
  *
- * Registration is validated but not stored: there is no account table yet.
- * Once one exists, insert @p details here and sign the new user in.
+ * Creates the account, then hands the new address to the sign-in screen. The
+ * user is deliberately not signed in automatically: proving they can type the
+ * password they just chose catches a typo now rather than at the next launch.
  *
  * @param details the validated account details
  */
 void MainWindow::handleRegistration(const RegistrationDetails &details)
 {
-    QMessageBox::information(
-        this, tr("Account not saved"),
-        tr("%1's details are valid, but account storage has not been built yet.\n\n"
-           "Sign in with an existing database account to continue.")
-            .arg(details.firstName));
+    QString error;
+    if (!ensureConnected(&error)) {
+        registerScreen->showError(error);
+        return;
+    }
 
+    if (AccountRepository::emailTaken(details.email, &error)) {
+        registerScreen->showError(
+            error.isEmpty()
+                ? tr("An account already exists for %1.").arg(details.email)
+                : error);
+        return;
+    }
+
+    if (!AccountRepository::create(details, &error)) {
+        registerScreen->showError(error);
+        return;
+    }
+
+    const QString email = details.email;
     showSignIn();
+    signInScreen->setEmail(email);
+    statusBar()->showMessage(tr("Account created for %1").arg(email));
 }
 
 void MainWindow::on_action_New_Host_triggered()

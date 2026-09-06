@@ -21,8 +21,11 @@ class SignInWidget : public QWidget
 public:
     explicit SignInWidget(QWidget *parent = nullptr);
 
-    /** @brief Clear the password, the error, and focus the username field. */
+    /** @brief Clear the password, the error, and focus the email field. */
     void reset();
+
+    /** @brief Pre-fill the email field, e.g. straight after registering. */
+    void setEmail(const QString &email);
 
     /** @brief Show @p message beneath the form and re-enable the button. */
     void showError(const QString &message);
@@ -32,7 +35,7 @@ public:
 
 signals:
     /** @brief The user submitted credentials. */
-    void signInRequested(const QString &username, const QString &password);
+    void signInRequested(const QString &email, const QString &password);
 
     /** @brief The user wants the registration screen instead. */
     void registerRequested();
@@ -44,7 +47,7 @@ private slots:
     void submit();
 
 private:
-    QLineEdit *usernameEdit;
+    QLineEdit *emailEdit;
     QLineEdit *passwordEdit;
     QPushButton *signInButton;
     QLabel *errorLabel;

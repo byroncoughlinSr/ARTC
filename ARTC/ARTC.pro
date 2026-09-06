@@ -33,7 +33,9 @@ SOURCES += \
     uitheme.cpp \
     homewidget.cpp \
     signinwidget.cpp \
-    registerwidget.cpp
+    registerwidget.cpp \
+    passwordhasher.cpp \
+    accountrepository.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -44,7 +46,9 @@ HEADERS += \
     uitheme.h \
     homewidget.h \
     signinwidget.h \
-    registerwidget.h
+    registerwidget.h \
+    passwordhasher.h \
+    accountrepository.h
 
 FORMS += \
         mainwindow.ui \
@@ -52,4 +56,8 @@ FORMS += \
 
 RESOURCES += \
     resources.qrc
+
+# Argon2id password hashing. OpenSSL 3.2 and later ship it as a KDF in the
+# default provider, so no separate Argon2 library is needed.
+LIBS += -lcrypto
 

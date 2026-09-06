@@ -88,26 +88,46 @@ bool DatabaseHelper::createConnection()
     const QString host = config.value("host", "127.0.0.1").toString();
     const int port = config.value("port", 3306).toInt();
     const QString database = config.value("database", "dbArtc").toString();
+    // Empty credentials mean "use the application's own account". Sign-in is
+    // checked against tblAccount now, so the connection no longer carries the
+    // end user's credentials and is opened once with the account in config.ini.
+    const QString user = userName.isEmpty()
+                             ? config.value("user").toString() : userName;
+    const QString secret = userName.isEmpty()
+                               ? config.value("password").toString() : passWord;
     config.endGroup();
 
-    const QString DRIVER("QMYSQL");
-    if (!QSqlDatabase::isDriverAvailable(DRIVER)) {
-        errorText = QObject::tr("The %1 driver is not available. Qt is missing its MySQL "
-                                "plugin.").arg(DRIVER);
+    if (user.isEmpty()) {
+        errorText = QObject::tr("No database account in %1. Run "
+                                "database/scripts/initial_setup.py.").arg(configPath);
         return false;
     }
 
+    const QString DRIVER("QMYSQL");
     db = QSqlDatabase::addDatabase(DRIVER);
+
+    // isDriverAvailable() only reports that Qt knows the driver's name: it
+    // still says true when the plugin is present but cannot be dlopen'd.
+    // addDatabase hands back an invalid database in that case, which is the
+    // only reliable signal, and the usual cause is a missing client library.
+    if (!db.isValid()) {
+        errorText = QObject::tr(
+            "The %1 driver could not be loaded.\n\n"
+            "Qt's plugin needs the MySQL client library it was built against "
+            "(libmysqlclient.so.21). Run with QT_DEBUG_PLUGINS=1 to see which "
+            "library is missing.").arg(DRIVER);
+        return false;
+    }
     db.setHostName(host);
     db.setPort(port);
-    db.setUserName(userName);
-    db.setPassword(passWord);
+    db.setUserName(user);
+    db.setPassword(secret);
     db.setDatabaseName(database);
 
     if (!db.open()) {
         errorText = QObject::tr("Could not open %1 at %2:%3 as '%4'.\n"
                                 "Settings read from %5.\n\n%6")
-                        .arg(database, host, QString::number(port), userName,
+                        .arg(database, host, QString::number(port), user,
                              configPath, db.lastError().text());
         return false;
     }

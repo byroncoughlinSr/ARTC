@@ -22,12 +22,12 @@ SignInWidget::SignInWidget(QWidget *parent) :
     auto *title = new QLabel(tr("Sign in"), card);
     title->setObjectName(QStringLiteral("screenTitle"));
 
-    auto *blurb = new QLabel(tr("Use your ARTC database credentials."), card);
+    auto *blurb = new QLabel(tr("Sign in with the account you created."), card);
     blurb->setObjectName(QStringLiteral("bodyText"));
     blurb->setWordWrap(true);
 
-    usernameEdit = new QLineEdit(card);
-    usernameEdit->setPlaceholderText(tr("Username"));
+    emailEdit = new QLineEdit(card);
+    emailEdit->setPlaceholderText(tr("you@example.com"));
 
     passwordEdit = new QLineEdit(card);
     passwordEdit->setEchoMode(QLineEdit::Password);
@@ -65,7 +65,7 @@ SignInWidget::SignInWidget(QWidget *parent) :
     cardLayout->addSpacing(8);
     cardLayout->addWidget(blurb);
     cardLayout->addSpacing(26);
-    cardLayout->addWidget(UiTheme::createField(tr("Username"), usernameEdit, card));
+    cardLayout->addWidget(UiTheme::createField(tr("Email"), emailEdit, card));
     cardLayout->addSpacing(16);
     cardLayout->addWidget(UiTheme::createField(tr("Password"), passwordEdit, card));
     cardLayout->addSpacing(16);
@@ -84,12 +84,12 @@ SignInWidget::SignInWidget(QWidget *parent) :
     screenLayout->addStretch(1);
 
     connect(signInButton, &QPushButton::clicked, this, &SignInWidget::submit);
-    connect(usernameEdit, &QLineEdit::returnPressed, this, &SignInWidget::submit);
+    connect(emailEdit, &QLineEdit::returnPressed, this, &SignInWidget::submit);
     connect(passwordEdit, &QLineEdit::returnPressed, this, &SignInWidget::submit);
     connect(backButton, &QPushButton::clicked, this, &SignInWidget::backRequested);
     connect(registerLink, &QPushButton::clicked, this, &SignInWidget::registerRequested);
 
-    setTabOrder(usernameEdit, passwordEdit);
+    setTabOrder(emailEdit, passwordEdit);
 }
 
 void SignInWidget::reset()
@@ -98,7 +98,16 @@ void SignInWidget::reset()
     errorLabel->clear();
     errorLabel->hide();
     setBusy(false);
-    usernameEdit->setFocus();
+    if (emailEdit->text().isEmpty()) {
+        emailEdit->setFocus();
+    } else {
+        passwordEdit->setFocus();
+    }
+}
+
+void SignInWidget::setEmail(const QString &email)
+{
+    emailEdit->setText(email);
 }
 
 void SignInWidget::showError(const QString &message)
@@ -110,7 +119,7 @@ void SignInWidget::showError(const QString &message)
 
 void SignInWidget::setBusy(bool busy)
 {
-    usernameEdit->setEnabled(!busy);
+    emailEdit->setEnabled(!busy);
     passwordEdit->setEnabled(!busy);
     signInButton->setEnabled(!busy);
     signInButton->setText(busy ? tr("Signing in…") : tr("Sign In"));
@@ -118,14 +127,14 @@ void SignInWidget::setBusy(bool busy)
 
 void SignInWidget::submit()
 {
-    const QString username = usernameEdit->text().trimmed();
-    if (username.isEmpty()) {
-        showError(tr("Enter a username."));
-        usernameEdit->setFocus();
+    const QString email = emailEdit->text().trimmed();
+    if (email.isEmpty()) {
+        showError(tr("Enter your email address."));
+        emailEdit->setFocus();
         return;
     }
 
     errorLabel->hide();
     setBusy(true);
-    emit signInRequested(username, passwordEdit->text());
+    emit signInRequested(email, passwordEdit->text());
 }

@@ -38,16 +38,22 @@ and that `mysql-test.py` reads as a `mysql.connector` option file.
 
 ## Features
 
-| Feature  | Table       | Requires |
-| -------- | ----------- | -------- |
-| `person` | `tblPerson` | —        |
-| `child`  | `tblChild`  | `person` |
-| `host`   | `tblHost`   | `person` |
+| Feature   | Table        | Requires |
+| --------- | ------------ | -------- |
+| `person`  | `tblPerson`  | —        |
+| `account` | `tblAccount` | `person` |
+| `child`   | `tblChild`   | `person` |
+| `host`    | `tblHost`    | `person` |
 
 `tblPerson` is a self-referencing adjacency list: `fatherId` and `motherId`
 point back at `tblPerson.ID`. `middleName`, `gender`, `birthdate`, `fatherId`
 and `motherId` are all nullable, because `DatabaseHelper::addMother` and
 `addFather` insert placeholders carrying only a first and last name.
+
+`tblAccount` backs registration and sign-in. Its `passwordHash` holds a
+PHC-format Argon2id string that carries its own cost parameters, so the work
+factor can be raised later without invalidating existing hashes. `personId` is
+null until the account holder creates a host.
 
 `tblChild` and `tblHost` are created because the application writes to them,
 not because anything reads them back — see the schema notes in `CLAUDE.md`.

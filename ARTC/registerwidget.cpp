@@ -52,10 +52,6 @@ RegisterWidget::RegisterWidget(QWidget *parent) :
     blurb->setObjectName(QStringLiteral("bodyText"));
     blurb->setWordWrap(true);
 
-    auto *notice = new QLabel(tr("Account storage is not connected yet. Details are "
-                                 "validated but not saved."), card);
-    notice->setObjectName(QStringLiteral("noticeLabel"));
-    notice->setWordWrap(true);
 
     firstNameEdit = new QLineEdit(card);
     firstNameEdit->setPlaceholderText(tr("Given name"));
@@ -127,8 +123,6 @@ RegisterWidget::RegisterWidget(QWidget *parent) :
     cardLayout->addWidget(title);
     cardLayout->addSpacing(8);
     cardLayout->addWidget(blurb);
-    cardLayout->addSpacing(20);
-    cardLayout->addWidget(notice);
     cardLayout->addSpacing(24);
     cardLayout->addLayout(form);
     cardLayout->addSpacing(16);

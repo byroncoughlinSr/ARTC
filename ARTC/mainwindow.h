@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include "databasehelper.h"
 #include "person.h"
+#include "accountrepository.h"
 #include "registerwidget.h"
 
 class HomeWidget;
@@ -37,10 +38,10 @@ public:
 private slots:
     void on_action_New_Host_triggered();
 
-    /** @brief Open the database with @p username / @p password. */
-    void attemptSignIn(const QString &username, const QString &password);
+    /** @brief Check @p email / @p password against tblAccount. */
+    void attemptSignIn(const QString &email, const QString &password);
 
-    /** @brief Report that account storage does not exist yet. */
+    /** @brief Create an account from @p details. */
     void handleRegistration(const RegistrationDetails &details);
 
     void showHome();
@@ -57,6 +58,16 @@ private:
 
     /** @brief Show or hide the workspace chrome. */
     void setWorkspaceChromeVisible(bool visible);
+
+    /**
+     * @brief Open the database with the application's own account if needed.
+     * @param[out] error why the connection failed, suitable for a screen
+     * @return true when a usable connection is open
+     */
+    bool ensureConnected(QString *error);
+
+    bool connected = false;
+    Account signedInAccount;
 
     Ui::MainWindow *ui;
     QStackedWidget *screens;
