@@ -10,6 +10,7 @@
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QPainter>
+#include <QPainterPath>
 #include <QPen>
 #include <QPushButton>
 #include <QSpinBox>
@@ -17,18 +18,64 @@
 
 namespace {
 
-// Chart geometry. RowHeight is what one leaf slot occupies; everything else
-// is centred against it, so the deepest generation sets the overall height.
-constexpr qreal ColumnWidth = 132;
-constexpr qreal RowHeight = 26;
-constexpr qreal NodeSize = 16;
-constexpr qreal ScenePadding = 40;
+// Card geometry. A column holds one card plus the gutter its connectors run
+// through; RowHeight is what one leaf card occupies.
+constexpr qreal CardWidth = 196;
+constexpr qreal CardHeight = 54;
+constexpr qreal ColumnWidth = 268;
+constexpr qreal RowHeight = 64;
+constexpr qreal CornerRadius = 6;
+constexpr qreal AccentWidth = 5;
+constexpr qreal ScenePadding = 26;
 
 const QColor Ink(0x16, 0x23, 0x3A);
-const QColor Accent(0x1E, 0x3A, 0x5F);
-const QColor Host(0xE8, 0xB4, 0x4A);
-const QColor Empty(0xA9, 0xB7, 0xC9);
+const QColor Muted(0x76, 0x84, 0x96);
 const QColor Line(0xC3, 0xCD, 0xDA);
+const QColor CardFill(0xFF, 0xFF, 0xFF);
+const QColor CardEdge(0xD8, 0xDF, 0xE8);
+
+const QColor MaleAccent(0x3E, 0x7C, 0xB1);
+const QColor MaleTint(0xEA, 0xF2, 0xF9);
+const QColor FemaleAccent(0xB5, 0x62, 0x8E);
+const QColor FemaleTint(0xF9, 0xEA, 0xF2);
+const QColor HostAccent(0xD3, 0x9A, 0x2E);
+const QColor HostTint(0xFD, 0xF6, 0xE7);
+const QColor EmptyEdge(0xC7, 0xD1, 0xDD);
+
+/** 2 -> "2nd", 3 -> "3rd", 4 -> "4th". */
+QString ordinal(int n)
+{
+    if (n % 100 >= 11 && n % 100 <= 13) {
+        return QStringLiteral("%1th").arg(n);
+    }
+    switch (n % 10) {
+    case 1:  return QStringLiteral("%1st").arg(n);
+    case 2:  return QStringLiteral("%1nd").arg(n);
+    case 3:  return QStringLiteral("%1rd").arg(n);
+    default: return QStringLiteral("%1th").arg(n);
+    }
+}
+
+/**
+ * @brief Name a slot by its position, the way a pedigree chart is read.
+ *
+ * Generation 3 is the great-grandparents; every generation past that adds one
+ * "great", numbered as the requirements document lists them.
+ */
+QString relationship(const TreeNode *node)
+{
+    const bool male = node->sex != QLatin1Char('F');
+    switch (node->generation) {
+    case 0: return QObject::tr("Host");
+    case 1: return male ? QObject::tr("Father") : QObject::tr("Mother");
+    case 2: return male ? QObject::tr("Grandfather") : QObject::tr("Grandmother");
+    case 3: return male ? QObject::tr("Great-grandfather")
+                        : QObject::tr("Great-grandmother");
+    default:
+        return male ? QObject::tr("%1 great-grandfather").arg(ordinal(node->generation - 2))
+                    : QObject::tr("%1 great-grandmother").arg(ordinal(node->generation - 2));
+    }
+}
 
 } // namespace
 
@@ -70,14 +117,13 @@ PedigreeView::PedigreeView(QWidget *parent) :
 
     generationSpin = new QSpinBox(this);
     generationSpin->setRange(2, 8);
-    generationSpin->setValue(5);
+    generationSpin->setValue(4);
     generationSpin->setToolTip(tr("Generations to show. The full chart is eight deep, "
                                   "which is 128 slots in the last generation alone."));
     auto *generationLabel = new QLabel(tr("Generations"), this);
     generationLabel->setObjectName(QStringLiteral("fieldLabel"));
 
-    auto *legend = new QLabel(tr("□ male    ○ female    ● host    "
-                                 "hollow = slot awaiting a DNA match"), this);
+    auto *legend = new QLabel(tr("□ male    ○ female    dashed = no match yet"), this);
     legend->setObjectName(QStringLiteral("footerText"));
 
     auto *toolbar = new QHBoxLayout;
@@ -153,7 +199,7 @@ void PedigreeView::draw()
 
     qreal nextRow = 0;
     const qreal hostY = place(root, nextRow);
-    hostPos = QPointF(0, hostY);
+    hostPos = QPointF(CardWidth / 2, hostY);
     viewPositioned = false;
 
     scene->setSceneRect(scene->itemsBoundingRect()
@@ -189,14 +235,15 @@ qreal PedigreeView::place(TreeNode *node, qreal &nextRow)
 
     drawNode(node, x, y);
 
-    // An elbow out to the midpoint, up or down to the parent's row, then across.
-    const QPen pen(Line, 1.2);
-    const qreal mid = x + ColumnWidth * 0.5;
+    // Out of this card's right edge, along the gutter, then into the parent's
+    // left edge — the orthogonal elbow a pedigree chart is drawn with.
+    const QPen pen(Line, 1.3);
+    const qreal gutter = x + CardWidth + (ColumnWidth - CardWidth) * 0.5;
     for (const auto &parent : parents) {
         const qreal parentX = parent.first->generation * ColumnWidth;
-        scene->addLine(x + NodeSize * 0.6, y, mid, y, pen);
-        scene->addLine(mid, y, mid, parent.second, pen);
-        scene->addLine(mid, parent.second, parentX - NodeSize * 0.6, parent.second, pen);
+        scene->addLine(x + CardWidth, y, gutter, y, pen);
+        scene->addLine(gutter, y, gutter, parent.second, pen);
+        scene->addLine(gutter, parent.second, parentX, parent.second, pen);
     }
 
     return y;
@@ -211,37 +258,87 @@ void PedigreeView::drawNode(TreeNode *node, qreal x, qreal y)
 {
     const bool placeholder = node->isPlaceholder();
     const bool isHost = node->generation == 0;
-    const qreal half = NodeSize / 2;
+    const bool female = node->sex == QLatin1Char('F');
 
-    QPen pen(placeholder ? Empty : Accent, placeholder ? 1.2 : 1.6);
-    QBrush brush(isHost ? Host : (placeholder ? QBrush(Qt::NoBrush) : QBrush(Accent)));
+    const QColor accent = isHost ? HostAccent : (female ? FemaleAccent : MaleAccent);
+    const QColor tint = isHost ? HostTint : (female ? FemaleTint : MaleTint);
+    const QRectF card(x, y - CardHeight / 2, CardWidth, CardHeight);
 
-    QGraphicsItem *shape = nullptr;
-    if (node->sex == QLatin1Char('F')) {
-        shape = scene->addEllipse(x - half, y - half, NodeSize, NodeSize, pen, brush);
+    // An empty slot is drawn as a dashed outline on the plain card colour, so
+    // the chart reads at a glance as a scaffold with a few people in it.
+    QPen edge(placeholder ? EmptyEdge : CardEdge, placeholder ? 1.1 : 1.3);
+    if (placeholder) {
+        edge.setStyle(Qt::DashLine);
+        edge.setDashPattern({4, 3});
+    }
+
+    QPainterPath path;
+    path.addRoundedRect(card, CornerRadius, CornerRadius);
+    QGraphicsPathItem *body = scene->addPath(path, edge,
+                                             placeholder ? QBrush(CardFill) : QBrush(tint));
+
+    // The accent stripe down the left edge carries the sex at a distance.
+    QPainterPath stripe;
+    stripe.addRoundedRect(QRectF(card.left(), card.top(), AccentWidth * 2, CardHeight),
+                          CornerRadius, CornerRadius);
+    stripe.addRect(QRectF(card.left() + AccentWidth, card.top(), AccentWidth, CardHeight));
+    QColor stripeColour = accent;
+    if (placeholder && !isHost) {
+        stripeColour.setAlpha(90);
+    }
+    scene->addPath(stripe.simplified(), QPen(Qt::NoPen), QBrush(stripeColour));
+
+    // Square for male, circle for female — the design document's notation,
+    // kept as the card's avatar.
+    const qreal glyph = 15;
+    const qreal glyphX = card.left() + AccentWidth * 2 + 11;
+    const qreal glyphY = y - glyph / 2;
+    const QPen glyphPen(placeholder ? QColor(accent.red(), accent.green(), accent.blue(), 130)
+                                    : accent, 1.4);
+    const QBrush glyphFill = placeholder ? QBrush(Qt::NoBrush) : QBrush(accent.lighter(155));
+    if (female) {
+        scene->addEllipse(glyphX, glyphY, glyph, glyph, glyphPen, glyphFill);
     } else {
-        shape = scene->addRect(x - half, y - half, NodeSize, NodeSize, pen, brush);
+        scene->addRect(glyphX, glyphY, glyph, glyph, glyphPen, glyphFill);
     }
 
-    QString tip = placeholder
-                      ? tr("Empty slot %1 — generation %2")
-                            .arg(node->firstName).arg(node->generation)
-                      : tr("%1 — generation %2").arg(node->displayName()).arg(node->generation);
-    shape->setToolTip(tip);
+    const qreal textX = glyphX + glyph + 10;
+    const qreal textWidth = card.right() - textX - 8;
 
-    // Only real people are labelled: the chart should read as an empty
-    // scaffold, not as a wall of generated slot codes.
-    if (!placeholder) {
-        auto *label = scene->addSimpleText(node->displayName());
-        label->setBrush(Ink);
-        QFont font = label->font();
-        font.setPointSizeF(8.5);
-        font.setBold(isHost);
-        label->setFont(font);
-        // Above the node rather than beside it: the elbow out to the parents
-        // runs along y and would strike the text through.
-        label->setPos(x - half, y - half - label->boundingRect().height() - 3);
+    // Line one: the person's name, or the relationship for an empty slot.
+    auto *primary = scene->addSimpleText(placeholder ? relationship(node)
+                                                     : node->displayName());
+    QFont primaryFont = primary->font();
+    primaryFont.setPointSizeF(9.5);
+    primaryFont.setBold(!placeholder);
+    primary->setFont(primaryFont);
+    primary->setBrush(placeholder ? Muted : Ink);
+    primary->setPos(textX, y - 15);
+
+    // Line two: dates for a person, the awaited-match note for a slot.
+    QString secondary;
+    if (placeholder) {
+        secondary = QObject::tr("No match yet");
+    } else if (node->birthdate.isValid() && node->birthdate.year() > 1) {
+        secondary = QObject::tr("b. %1").arg(node->birthdate.toString(QStringLiteral("yyyy")));
     }
+    if (!secondary.isEmpty()) {
+        auto *sub = scene->addSimpleText(secondary);
+        QFont subFont = sub->font();
+        subFont.setPointSizeF(8);
+        sub->setFont(subFont);
+        sub->setBrush(Muted);
+        sub->setPos(textX, y + 1);
+    }
+
+    Q_UNUSED(textWidth)
+    body->setToolTip(placeholder
+                         ? QObject::tr("%1 — empty slot %2 (generation %3)")
+                               .arg(relationship(node), node->firstName)
+                               .arg(node->generation)
+                         : QObject::tr("%1 — %2 (generation %3)")
+                               .arg(node->displayName(), relationship(node))
+                               .arg(node->generation));
 }
 
 void PedigreeView::showEvent(QShowEvent *event)
@@ -271,7 +368,9 @@ void PedigreeView::showHostArea()
     }
 
     view->resetTransform();
-    view->centerOn(hostPos);
+    // Horizontally on the middle of the chart so the deepest generation is not
+    // cut off, but vertically on the host, which is what the eye looks for.
+    view->centerOn(scene->sceneRect().center().x(), hostPos.y());
     viewPositioned = true;
 }
 
