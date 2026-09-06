@@ -28,3 +28,7 @@ __pycache__/
 # Database dumps — schema.sql is committed, data dumps are not
 dbArtc-backup-*.sql
 *.sql.gz
+
+# Python bytecode from the database scripts
+__pycache__/
+*.py[cod]
