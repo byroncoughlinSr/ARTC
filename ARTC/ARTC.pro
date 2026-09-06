@@ -51,8 +51,7 @@ HEADERS += \
     accountrepository.h
 
 FORMS += \
-        mainwindow.ui \
-    hostdlg.ui
+        mainwindow.ui
 
 RESOURCES += \
     resources.qrc

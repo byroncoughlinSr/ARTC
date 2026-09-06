@@ -254,7 +254,11 @@ void MainWindow::on_action_New_Host_triggered()
     Person::Individual mother;
 
     hostdlg.setModal(true);
-    hostdlg.exec();
+    if (hostdlg.exec() != QDialog::Accepted) {
+        // Cancelling used to fall through and write an empty person, plus the
+        // hundreds of placeholder ancestors generated from it.
+        return;
+    }
     person = hostdlg.getHost();
 
     //Add root person to database

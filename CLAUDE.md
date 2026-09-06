@@ -93,6 +93,11 @@ SignInWidget ── signInRequested ─────►│
                        Hostdlg → DatabaseHelper → Pedigree::createPedigree
 ```
 
+**Never position widgets at fixed pixel coordinates.** The application stylesheet pads
+inputs, so a hardcoded 24px-tall `QDateEdit` clips its own text. Every screen and dialog
+uses layouts and sizes itself from its content. `mainwindow.ui` is the only remaining `.ui`
+file, and it carries no positioned widgets.
+
 **Word-wrapped labels must be `WrappingLabel`** (`uitheme.h`), not `QLabel`. A wrapped
 QLabel reports about one line as its minimum size, so the fixed-width cards collapse around
 it and clip the remaining lines. `WrappingLabel` pins its minimum height to
